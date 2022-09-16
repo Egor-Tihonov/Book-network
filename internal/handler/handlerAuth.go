@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/Egor-Tihonov/Book-network/internal/server"
@@ -11,6 +13,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
 )
+
+var ErrorStatusUnautharized = errors.New("Unauthorized")
 
 //Registration create new user
 func (h *Handler) Registration(c echo.Context) error {
@@ -48,8 +52,28 @@ func (h *Handler) Authentcation(c echo.Context) error {
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
+func (h *Handler) Logout(c echo.Context) error {
+	claims, err := validation(c)
+	if err != nil {
+		if err == ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, err.Error())
+		}
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	claims.ExpiresAt = time.Now().Unix()
+	return c.JSON(http.StatusOK, nil)
+}
+
 //validation check user tokens
-func validation(tknStr string) (model.JWTClaims, error) {
+func validation(c echo.Context) (model.JWTClaims, error) {
+	cookie, err := c.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return model.JWTClaims{}, ErrorStatusUnautharized
+		}
+		return model.JWTClaims{}, err
+	}
+	tknStr = cookie.Value
 	claims := &model.JWTClaims{}
 	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return server.JwtKey, nil

@@ -27,16 +27,11 @@ func New(srv *server.Server) *Handler {
 
 //GetUser get info about user from db
 func (h *Handler) GetUser(c echo.Context) error {
-	cookie, err := c.Cookie("token")
+	claims, err := validation(c)
 	if err != nil {
-		if err == http.ErrNoCookie {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, err.Error())
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
-	tknStr = cookie.Value
-	claims, err := validation(tknStr)
-	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 	user, err := h.se.GetUser(context.Background(), claims.Id)
@@ -47,16 +42,11 @@ func (h *Handler) GetUser(c echo.Context) error {
 }
 
 func (h *Handler) UpdateUser(c echo.Context) error {
-	cookie, err := c.Cookie("token")
+	claims, err := validation(c)
 	if err != nil {
-		if err == http.ErrNoCookie {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, err.Error())
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
-	tknStr = cookie.Value
-	claims, err := validation(tknStr)
-	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 	person := model.UserModel{}
@@ -68,6 +58,21 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	err = h.se.UpdateUser(context.Background(), claims.Id, &person)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, nil)
+}
+
+func (h *Handler) DeleteUser(c echo.Context) error {
+	claims, err := validation(c)
+	if err != nil {
+		if err == ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, err.Error())
+		}
+		c.JSON(http.StatusBadRequest, err.Error())
+	}
+	err = h.se.Delete(context.Background(), claims.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }

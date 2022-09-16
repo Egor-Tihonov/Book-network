@@ -38,7 +38,7 @@ func (r *PostgresDB) CreateUser(ctx context.Context, person *model.UserModel) er
 }
 
 // Delete : delete user by his ID
-func (r *PostgresDB) DeleteUser(ctx context.Context, id string) error {
+func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 	a, err := r.Pool.Exec(ctx, "delete from persons where id=$1", id)
 	if a.RowsAffected() == 0 {
 		return fmt.Errorf("user with this id doesnt exist")

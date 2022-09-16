@@ -22,3 +22,7 @@ func (s *Server) GetUser(ctx context.Context, id string) (*model.UserModel, erro
 func (s *Server) UpdateUser(ctx context.Context, id string, mdl *model.UserModel) error {
 	return s.rps.Update(ctx, id, mdl)
 }
+
+func (s *Server) Delete(ctx context.Context, id string) error {
+	return s.rps.Delete(ctx, id)
+}

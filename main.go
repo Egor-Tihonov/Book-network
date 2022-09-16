@@ -20,6 +20,8 @@ func main() {
 	e.POST("/sign-up", h.Registration)
 	e.GET("/user", h.GetUser)
 	e.PUT("/user/update", h.UpdateUser)
+	e.DELETE("/user/delete", h.DeleteUser)
+	e.POST("/user/logout", h.Logout)
 	err = e.Start(":8000")
 	if err != nil {
 		logrus.Fatalf("error started server")
