@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -9,10 +8,6 @@ import (
 	"github.com/Egor-Tihonov/Book-network/internal/server"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
-)
-
-var (
-	tknStr string
 )
 
 //Handler ...
@@ -27,14 +22,14 @@ func New(srv *server.Server) *Handler {
 
 //GetUser get info about user from db
 func (h *Handler) GetUser(c echo.Context) error {
-	claims, err := validation(c)
+	claims, err := h.se.Validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			c.JSON(http.StatusUnauthorized, err.Error())
+		if err == server.ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, nil)
 		}
-		return c.JSON(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	user, err := h.se.GetUser(context.Background(), claims.Id)
+	user, err := h.se.GetUser(c.Request().Context(), claims.Id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -42,12 +37,12 @@ func (h *Handler) GetUser(c echo.Context) error {
 }
 
 func (h *Handler) UpdateUser(c echo.Context) error {
-	claims, err := validation(c)
+	claims, err := h.se.Validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			c.JSON(http.StatusUnauthorized, err.Error())
+		if err == server.ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, nil)
 		}
-		return c.JSON(http.StatusUnauthorized, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	person := model.UserModel{}
 	err = json.NewDecoder(c.Request().Body).Decode(&person)
@@ -55,7 +50,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	err = h.se.UpdateUser(context.Background(), claims.Id, &person)
+	err = h.se.UpdateUser(c.Request().Context(), claims.Id, &person)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -63,14 +58,14 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 }
 
 func (h *Handler) DeleteUser(c echo.Context) error {
-	claims, err := validation(c)
+	claims, err := h.se.Validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			c.JSON(http.StatusUnauthorized, err.Error())
+		if err == server.ErrorStatusUnautharized {
+			c.JSON(http.StatusUnauthorized, nil)
 		}
 		c.JSON(http.StatusBadRequest, err.Error())
 	}
-	err = h.se.Delete(context.Background(), claims.Id)
+	err = h.se.Delete(c.Request().Context(), claims.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 	}

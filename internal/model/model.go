@@ -36,5 +36,5 @@ type JWTClaims struct {
 
 var (
 	//expirationTime work time
-	ExpirationTime = time.Now().Add(1 * time.Hour)
+	ExpirationTime = time.Now().Add(1 * time.Minute)
 )

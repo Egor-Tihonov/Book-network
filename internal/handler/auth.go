@@ -1,20 +1,15 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/Egor-Tihonov/Book-network/internal/server"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
 )
-
-var ErrorStatusUnautharized = errors.New("Unauthorized")
 
 //Registration create new user
 func (h *Handler) Registration(c echo.Context) error {
@@ -24,7 +19,7 @@ func (h *Handler) Registration(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	err = h.se.RegistrationUser(context.Background(), &person)
+	err = h.se.RegistrationUser(c.Request().Context(), &person)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -39,7 +34,7 @@ func (h *Handler) Authentcation(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	accessToken, err := h.se.Authentcation(context.Background(), &authForm)
+	accessToken, err := h.se.Authentcation(c.Request().Context(), &authForm)
 
 	if err != nil {
 		return c.JSON(400, err.Error())
@@ -53,10 +48,10 @@ func (h *Handler) Authentcation(c echo.Context) error {
 }
 
 func (h *Handler) Logout(c echo.Context) error {
-	claims, err := validation(c)
+	claims, err := h.se.Validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == server.ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, nil)
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -65,27 +60,3 @@ func (h *Handler) Logout(c echo.Context) error {
 }
 
 //validation check user tokens
-func validation(c echo.Context) (model.JWTClaims, error) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return model.JWTClaims{}, ErrorStatusUnautharized
-		}
-		return model.JWTClaims{}, err
-	}
-	tknStr = cookie.Value
-	claims := &model.JWTClaims{}
-	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return server.JwtKey, nil
-	})
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			return model.JWTClaims{}, err
-		}
-		return model.JWTClaims{}, err
-	}
-	if !tkn.Valid {
-		return model.JWTClaims{}, err
-	}
-	return *claims, nil
-}

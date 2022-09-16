@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/golang-jwt/jwt"
+	"github.com/labstack/echo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,9 +15,11 @@ var (
 	//ErrorEmptyUsername empty username
 	ErrorEmptyUsername = errors.New("username couldnt be empty")
 	//ErrorComparePassword false password
-	ErrorComparePassword = errors.New("passwrod not correct")
+	ErrorComparePassword    = errors.New("passwrod not correct")
+	ErrorStatusUnautharized = errors.New("Unauthorized")
 	//JwtKey secure key
 	JwtKey = []byte("super-key")
+	tknStr string
 )
 
 //Registration register new user, hash his password
@@ -82,4 +86,29 @@ func comparePassword(password, hashedPassword string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Server) Validation(c echo.Context) (model.JWTClaims, error) {
+	cookie, err := c.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return model.JWTClaims{}, ErrorStatusUnautharized
+		}
+		return model.JWTClaims{}, err
+	}
+	tknStr = cookie.Value
+	claims := &model.JWTClaims{}
+	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			return model.JWTClaims{}, err
+		}
+		return model.JWTClaims{}, err
+	}
+	if !tkn.Valid {
+		return model.JWTClaims{}, err
+	}
+	return *claims, nil
 }
