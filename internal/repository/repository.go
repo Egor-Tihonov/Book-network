@@ -1,3 +1,4 @@
+// Package repository ...
 package repository
 
 import (
@@ -11,12 +12,12 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-//PostgresDB db
+// PostgresDB db
 type PostgresDB struct {
 	Pool *pgxpool.Pool
 }
 
-//Create new connection with db
+// New create new connection with db
 func New(connString string) (*PostgresDB, error) {
 	poolP, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
@@ -25,7 +26,7 @@ func New(connString string) (*PostgresDB, error) {
 	return &PostgresDB{Pool: poolP}, nil
 }
 
-//CreateUser add new user into db
+// Create add new user into db
 func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error {
 	newID := uuid.New().String()
 	_, err := r.Pool.Exec(ctx, "insert into persons(id,username,name,password) values($1,$2,$3,$4)",
@@ -66,7 +67,7 @@ func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) 
 	return nil
 }
 
-// SelectByID : select one user by his ID
+// Get : select one user by his ID
 func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, error) {
 	p := model.UserModel{}
 	err := r.Pool.QueryRow(ctx, "select username,name,password from persons where id=$1", id).Scan(
@@ -76,22 +77,22 @@ func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, erro
 			return nil, fmt.Errorf("user with this id doesnt exist: %v", err)
 		}
 		log.Errorf("database error, select by id: %v", err)
-		return nil, err /*p, fmt.errorf("user with this id doesnt exist")*/
+		return nil, err
 	}
 	return &p, nil
 }
 
-//SelectUserAuth
+// GetAuth get user from db for authentication and create jwt tokens
 func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserModel, error) {
 	p := model.UserModel{}
-	err := r.Pool.QueryRow(ctx, "select id,username,name,password from persons where username=$1", username).Scan(
-		&p.Id, &p.Username, &p.Name, &p.Password)
+	err := r.Pool.QueryRow(ctx, "select id,username,password from persons where username=$1", username).Scan(
+		&p.ID, &p.Username, &p.Name, &p.Password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("user with this id doesnt exist: %v", err)
 		}
 		log.Errorf("database error, select by id: %v", err)
-		return nil, err /*p, fmt.errorf("user with this id doesnt exist")*/
+		return nil, err
 	}
 	return &p, nil
 }

@@ -16,7 +16,7 @@ func main() {
 	srv := server.New(repo)
 	h := handler.New(srv)
 	e := echo.New()
-	e.POST("/login", h.Authentcation)
+	e.POST("/login", h.Authentication)
 	e.POST("/sign-up", h.Registration)
 	e.GET("/user", h.GetUser)
 	e.PUT("/user/update", h.UpdateUser)

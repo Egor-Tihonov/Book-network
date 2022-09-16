@@ -1,3 +1,4 @@
+// Package model ...
 package model
 
 import (
@@ -6,26 +7,26 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-//UserModel ...
+// UserModel ...
 type UserModel struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	Name     string `json:"name"`
 	Password string `bson,json:"password"`
 }
 
-//AuthenticationForm
+// AuthenticationForm ...
 type AuthenticationForm struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-//JWTClaims json web tokens claims
+// JWTClaims json web tokens claims
 type JWTClaims struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	jwt.StandardClaims
 }
 
-//expirationTime work time
+// ExpirationTime work time
 var ExpirationTime = time.Now().Add(1 * time.Minute)

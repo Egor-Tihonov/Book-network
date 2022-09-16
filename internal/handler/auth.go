@@ -1,3 +1,4 @@
+// Package handler ...
 package handler
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-//Registration create new user
+// Registration create new user
 func (h *Handler) Registration(c echo.Context) error {
 	person := model.UserModel{}
 	err := json.NewDecoder(c.Request().Body).Decode(&person)
@@ -26,8 +27,8 @@ func (h *Handler) Registration(c echo.Context) error {
 	return c.JSON(http.StatusOK, nil)
 }
 
-//Authentication login, create tokens and put it in cookies
-func (h *Handler) Authentcation(c echo.Context) error {
+// Authentication login, create tokens and push it in cookies
+func (h *Handler) Authentication(c echo.Context) error {
 	authForm := model.AuthenticationForm{}
 	err := json.NewDecoder(c.Request().Body).Decode(&authForm)
 	if err != nil {
@@ -37,7 +38,7 @@ func (h *Handler) Authentcation(c echo.Context) error {
 	accessToken, err := h.se.Authentication(c.Request().Context(), &authForm)
 
 	if err != nil {
-		return c.JSON(400, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
 		Name:    "token",
@@ -47,6 +48,7 @@ func (h *Handler) Authentcation(c echo.Context) error {
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
+// Logout ...
 func (h *Handler) Logout(c echo.Context) error {
 	claims, err := h.se.Validation(c)
 	if err != nil {

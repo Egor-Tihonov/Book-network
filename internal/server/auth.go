@@ -1,3 +1,4 @@
+// Package server ...
 package server
 
 import (
@@ -12,19 +13,19 @@ import (
 )
 
 var (
-	//ErrorEmptyUsername empty username
+	// ErrorEmptyUsername empty username
 	ErrorEmptyUsername = errors.New("username couldnt be empty")
-	//ErrorComparePassword false password
+	// ErrorComparePassword false password
 	ErrorComparePassword = errors.New("passwrod not correct")
-	//ErrorStatusUnautharized unutharized
+	// ErrorStatusUnautharized unutharized
 	ErrorStatusUnautharized = errors.New("Unauthorized")
-	//JwtKey secure key
+	// JwtKey secure key
 	JwtKey = []byte("super-key")
-	//tknStr token in string format
+	// tknStr token in string format
 	tknStr string
 )
 
-//Registration register new user, hash his password
+// RegistrationUser register new user, hash his password
 func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) error {
 	err := hashPassword(person)
 	if err != nil {
@@ -36,7 +37,7 @@ func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) 
 	return s.rps.Create(ctx, person)
 }
 
-//Authentication check user password, extradition jwt tokens
+// Authentication check user password, extradition jwt tokens
 func (s *Server) Authentication(ctx context.Context, authForm *model.AuthenticationForm) (string, error) {
 	user, err := s.rps.GetAuth(ctx, authForm.Username)
 	if err != nil {
@@ -53,10 +54,10 @@ func (s *Server) Authentication(ctx context.Context, authForm *model.Authenticat
 	return token, nil
 }
 
-//generateJWT ...
+// generateJWT ...
 func generateJWT(user *model.UserModel) (string, error) {
 	claims := model.JWTClaims{
-		Id:       user.Id,
+		ID:       user.ID,
 		Username: user.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: model.ExpirationTime.Unix(),
@@ -70,7 +71,7 @@ func generateJWT(user *model.UserModel) (string, error) {
 	return accessTokenStr, nil
 }
 
-//hashPassword ...
+// hashPassword ...
 func hashPassword(person *model.UserModel) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
 	if err != nil {
@@ -80,7 +81,7 @@ func hashPassword(person *model.UserModel) error {
 	return nil
 }
 
-//comparePasswrod ...
+// comparePasswrod ...
 func comparePassword(password, hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
@@ -90,7 +91,7 @@ func comparePassword(password, hashedPassword string) error {
 	return nil
 }
 
-//Validation check token
+// Validation check token
 func (s *Server) Validation(c echo.Context) (model.JWTClaims, error) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
