@@ -18,3 +18,7 @@ func New(repo *repository.PostgresDB) *Server {
 func (s *Server) GetUser(ctx context.Context, id string) (*model.UserModel, error) {
 	return s.rps.SelectUser(ctx, id)
 }
+
+func (s *Server) UpdateUser(ctx context.Context, id string, mdl *model.UserModel) error {
+	return s.rps.Update(ctx, id, mdl)
+}

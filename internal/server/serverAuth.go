@@ -12,14 +12,14 @@ import (
 var (
 	//ErrorEmptyUsername empty username
 	ErrorEmptyUsername = errors.New("username couldnt be empty")
-	//
+	//ErrorComparePassword false password
 	ErrorComparePassword = errors.New("passwrod not correct")
 	//JwtKey secure key
 	JwtKey = []byte("super-key")
 )
 
 //Registration register new user, hash his password
-func (s *Server) Registration(ctx context.Context, person *model.UserModel) error {
+func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) error {
 	err := hashPassword(person)
 	if err != nil {
 		return err
@@ -47,6 +47,7 @@ func (s *Server) Authentcation(ctx context.Context, authForm *model.Authentcatio
 	return token, nil
 }
 
+//generateJWT ...
 func generateJWT(user *model.UserModel) (string, error) {
 	claims := &model.JWTClaims{
 		Id:       user.Id,
@@ -63,6 +64,7 @@ func generateJWT(user *model.UserModel) (string, error) {
 	return accessTokenStr, nil
 }
 
+//hashPassword ...
 func hashPassword(person *model.UserModel) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
 	if err != nil {
@@ -71,6 +73,8 @@ func hashPassword(person *model.UserModel) error {
 	person.Password = string(bytes)
 	return nil
 }
+
+//comparePasswrod ...
 func comparePassword(password, hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {

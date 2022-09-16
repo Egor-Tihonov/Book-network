@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
+//Registration create new user
 func (h *Handler) Registration(c echo.Context) error {
 	person := model.UserModel{}
 	err := json.NewDecoder(c.Request().Body).Decode(&person)
@@ -19,13 +20,14 @@ func (h *Handler) Registration(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	err = h.se.Registration(context.Background(), &person)
+	err = h.se.RegistrationUser(context.Background(), &person)
 	if err != nil {
-		return c.JSON(400, err.Error())
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }
 
+//Authentication login, create tokens and put it in cookies
 func (h *Handler) Authentcation(c echo.Context) error {
 	authForm := model.AuthentcationForm{}
 	err := json.NewDecoder(c.Request().Body).Decode(&authForm)
@@ -34,11 +36,7 @@ func (h *Handler) Authentcation(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 	accessToken, err := h.se.Authentcation(context.Background(), &authForm)
-	// resp := &Response{
-	// 	Id:       user.Id,
-	// 	Username: user.Username,
-	// 	Token:    accessToken,
-	// }
+
 	if err != nil {
 		return c.JSON(400, err.Error())
 	}
@@ -50,6 +48,7 @@ func (h *Handler) Authentcation(c echo.Context) error {
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
+//validation check user tokens
 func validation(tknStr string) (model.JWTClaims, error) {
 	claims := &model.JWTClaims{}
 	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
