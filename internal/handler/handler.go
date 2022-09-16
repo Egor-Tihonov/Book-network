@@ -65,7 +65,7 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		}
 		c.JSON(http.StatusBadRequest, err.Error())
 	}
-	err = h.se.Delete(c.Request().Context(), claims.Id)
+	err = h.se.DeleteUser(c.Request().Context(), claims.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 	}

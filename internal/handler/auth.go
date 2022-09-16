@@ -28,13 +28,13 @@ func (h *Handler) Registration(c echo.Context) error {
 
 //Authentication login, create tokens and put it in cookies
 func (h *Handler) Authentcation(c echo.Context) error {
-	authForm := model.AuthentcationForm{}
+	authForm := model.AuthenticationForm{}
 	err := json.NewDecoder(c.Request().Body).Decode(&authForm)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	accessToken, err := h.se.Authentcation(c.Request().Context(), &authForm)
+	accessToken, err := h.se.Authentication(c.Request().Context(), &authForm)
 
 	if err != nil {
 		return c.JSON(400, err.Error())
@@ -58,5 +58,3 @@ func (h *Handler) Logout(c echo.Context) error {
 	claims.ExpiresAt = time.Now().Unix()
 	return c.JSON(http.StatusOK, nil)
 }
-
-//validation check user tokens

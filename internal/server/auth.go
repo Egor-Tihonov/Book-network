@@ -15,10 +15,12 @@ var (
 	//ErrorEmptyUsername empty username
 	ErrorEmptyUsername = errors.New("username couldnt be empty")
 	//ErrorComparePassword false password
-	ErrorComparePassword    = errors.New("passwrod not correct")
+	ErrorComparePassword = errors.New("passwrod not correct")
+	//ErrorStatusUnautharized unutharized
 	ErrorStatusUnautharized = errors.New("Unauthorized")
 	//JwtKey secure key
 	JwtKey = []byte("super-key")
+	//tknStr token in string format
 	tknStr string
 )
 
@@ -31,12 +33,12 @@ func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) 
 	if person.Username == "" {
 		return ErrorEmptyUsername
 	}
-	return s.rps.CreateUser(ctx, person)
+	return s.rps.Create(ctx, person)
 }
 
 //Authentication check user password, extradition jwt tokens
-func (s *Server) Authentcation(ctx context.Context, authForm *model.AuthentcationForm) (string, error) {
-	user, err := s.rps.SelectUserAuth(ctx, authForm.Username)
+func (s *Server) Authentication(ctx context.Context, authForm *model.AuthenticationForm) (string, error) {
+	user, err := s.rps.GetAuth(ctx, authForm.Username)
 	if err != nil {
 		return "", err
 	}
@@ -53,7 +55,7 @@ func (s *Server) Authentcation(ctx context.Context, authForm *model.Authentcatio
 
 //generateJWT ...
 func generateJWT(user *model.UserModel) (string, error) {
-	claims := &model.JWTClaims{
+	claims := model.JWTClaims{
 		Id:       user.Id,
 		Username: user.Username,
 		StandardClaims: jwt.StandardClaims{
@@ -88,6 +90,7 @@ func comparePassword(password, hashedPassword string) error {
 	return nil
 }
 
+//Validation check token
 func (s *Server) Validation(c echo.Context) (model.JWTClaims, error) {
 	cookie, err := c.Cookie("token")
 	if err != nil {

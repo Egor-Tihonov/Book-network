@@ -26,7 +26,7 @@ func New(connString string) (*PostgresDB, error) {
 }
 
 //CreateUser add new user into db
-func (r *PostgresDB) CreateUser(ctx context.Context, person *model.UserModel) error {
+func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error {
 	newID := uuid.New().String()
 	_, err := r.Pool.Exec(ctx, "insert into persons(id,username,name,password) values($1,$2,$3,$4)",
 		newID, &person.Username, &person.Name, &person.Password)
@@ -67,7 +67,7 @@ func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) 
 }
 
 // SelectByID : select one user by his ID
-func (r *PostgresDB) SelectUser(ctx context.Context, id string) (*model.UserModel, error) {
+func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, error) {
 	p := model.UserModel{}
 	err := r.Pool.QueryRow(ctx, "select username,name,password from persons where id=$1", id).Scan(
 		&p.Username, &p.Name, &p.Password)
@@ -82,7 +82,7 @@ func (r *PostgresDB) SelectUser(ctx context.Context, id string) (*model.UserMode
 }
 
 //SelectUserAuth
-func (r *PostgresDB) SelectUserAuth(ctx context.Context, username string) (*model.UserModel, error) {
+func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserModel, error) {
 	p := model.UserModel{}
 	err := r.Pool.QueryRow(ctx, "select id,username,name,password from persons where username=$1", username).Scan(
 		&p.Id, &p.Username, &p.Name, &p.Password)
