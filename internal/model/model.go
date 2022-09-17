@@ -26,6 +26,7 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
+// MyCookie ...
 type MyCookie struct {
 	CookieName   string
 	CookieMaxAge int

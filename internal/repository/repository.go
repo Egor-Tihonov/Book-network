@@ -4,7 +4,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/google/uuid"
@@ -17,6 +16,10 @@ import (
 type PostgresDB struct {
 	Pool *pgxpool.Pool
 }
+
+var (
+	ErrorUserDoesntExist = errors.New("user with this id/username doesnt exist")
+)
 
 // New create new connection with db
 func New(connString string) (*PostgresDB, error) {
@@ -43,11 +46,11 @@ func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error 
 func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 	a, err := r.Pool.Exec(ctx, "delete from persons where id=$1", id)
 	if a.RowsAffected() == 0 {
-		return fmt.Errorf("user with this id doesnt exist")
+		return ErrorUserDoesntExist
 	}
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return fmt.Errorf("user with this id doesnt exist: %v", err)
+			return ErrorUserDoesntExist
 		}
 		log.Errorf("error with delete user %v", err)
 		return err
@@ -59,7 +62,7 @@ func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) error {
 	a, err := r.Pool.Exec(ctx, "update persons set username=$1,name=$2 where id=$4", &p.Username, &p.Name, id)
 	if a.RowsAffected() == 0 {
-		return fmt.Errorf("user with this id doesnt exist")
+		return ErrorUserDoesntExist
 	}
 	if err != nil {
 		log.Errorf("error with update user %v", err)
@@ -75,8 +78,8 @@ func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, erro
 		&p.Username, &p.Name)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			err = errors.New("user with this id/username doesnt exist")
-			return nil, err
+
+			return nil, ErrorUserDoesntExist
 		}
 		log.Errorf("database error, select by id: %v", err)
 		return nil, err
@@ -91,7 +94,7 @@ func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserM
 		&p.ID, &p.Username, &p.Password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("user with this id doesnt exist: %v", err)
+			return nil, ErrorUserDoesntExist
 		}
 		log.Errorf("database error, select by id: %v", err)
 		return nil, err

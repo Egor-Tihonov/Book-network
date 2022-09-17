@@ -1,5 +1,7 @@
+// Package config ...
 package config
 
+// Config for env values
 type Config struct {
 	PostgresDBURL string `env:"POSTGRES_DB_URL"`
 	CookieName    string `env:"COOKIE_NAME"`

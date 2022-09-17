@@ -33,25 +33,24 @@ func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) 
 }
 
 // Authentication check user password, extradition jwt tokens
-func (s *Server) Authentication(ctx context.Context, authForm *model.AuthenticationForm) (string, error) {
-
+func (s *Server) Authentication(ctx context.Context, authForm *model.AuthenticationForm) (token string, err error) {
 	user, err := s.rps.GetAuth(ctx, authForm.Username)
 	if err != nil {
-		return "", err
+		return
 	}
 	err = comparePassword(authForm.Password, user.Password)
 	if err != nil {
-		return "", err
+		return
 	}
-	token, err := s.generateJWT(user)
+	token, err = s.generateJWT(user)
 	if err != nil {
-		return "", err
+		return
 	}
-	return token, nil
+	return
 }
 
 // generateJWT ...
-func (s *Server) generateJWT(user *model.UserModel) (string, error) {
+func (s *Server) generateJWT(user *model.UserModel) (accessTokenStr string, err error) {
 	claims := model.JWTClaims{
 		ID:       user.ID,
 		Username: user.Username,
@@ -60,29 +59,29 @@ func (s *Server) generateJWT(user *model.UserModel) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	accessTokenStr, err := token.SignedString(s.JWTKey)
+	accessTokenStr, err = token.SignedString(s.JWTKey)
 	if err != nil {
-		return "", err
+		return
 	}
-	return accessTokenStr, nil
+	return
 }
 
 // hashPassword ...
-func hashPassword(person *model.UserModel) error {
+func hashPassword(person *model.UserModel) (err error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(person.Password), 14)
 	if err != nil {
-		return err
+		return
 	}
 	person.Password = string(bytes)
-	return nil
+	return
 }
 
 // comparePasswrod ...
-func comparePassword(password, hashedPassword string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+func comparePassword(password, hashedPassword string) (err error) {
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		err = errors.New("password is incorrect")
-		return err
+		return
 	}
-	return nil
+	return
 }
