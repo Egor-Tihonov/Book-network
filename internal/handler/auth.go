@@ -3,13 +3,20 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
-	"github.com/Egor-Tihonov/Book-network/internal/server"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
+)
+
+var (
+	// ErrorStatusUnautharized unutharized
+	ErrorStatusUnautharized = errors.New("Unauthorized")
+	// tknStr token in string format
+	tknStr string
 )
 
 // Registration create new user
@@ -41,22 +48,54 @@ func (h *Handler) Authentication(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Name:    "token",
-		Value:   accessToken,
-		Expires: model.ExpirationTime,
+		Path:   h.CookiePath,
+		Name:   h.CookieName,
+		Value:  accessToken,
+		MaxAge: h.CookieMaxAge,
 	})
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
 // Logout ...
 func (h *Handler) Logout(c echo.Context) error {
-	claims, err := h.se.Validation(c)
+	_, err := h.validation(c)
+	c.SetCookie(&http.Cookie{
+		Path:   h.CookiePath,
+		Name:   h.CookieName,
+		Value:  "",
+		MaxAge: -1,
+	})
 	if err != nil {
-		if err == server.ErrorStatusUnautharized {
+		if err == ErrorStatusUnautharized {
 			return c.JSON(http.StatusUnauthorized, nil)
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	claims.ExpiresAt = time.Now().Unix()
 	return c.JSON(http.StatusOK, nil)
+}
+
+// Validation check token
+func (h *Handler) validation(c echo.Context) (*model.JWTClaims, error) {
+	cookie, err := c.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return nil, ErrorStatusUnautharized
+		}
+		return nil, err
+	}
+	tknStr = cookie.Value
+	claims := &model.JWTClaims{}
+	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return h.se.JWTKey, nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			return nil, err
+		}
+		return nil, err
+	}
+	if !tkn.Valid {
+		return nil, err
+	}
+	return claims, nil
 }

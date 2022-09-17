@@ -2,8 +2,6 @@
 package model
 
 import (
-	"time"
-
 	"github.com/golang-jwt/jwt"
 )
 
@@ -28,5 +26,8 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
-// ExpirationTime work time
-var ExpirationTime = time.Now().Add(1 * time.Minute)
+type MyCookie struct {
+	CookieName   string
+	CookieMaxAge int
+	CookiePath   string
+}

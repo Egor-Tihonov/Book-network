@@ -14,23 +14,24 @@ import (
 // Handler ...
 type Handler struct {
 	se *server.Server
+	model.MyCookie
 }
 
 // New create new handler
-func New(srv *server.Server) *Handler {
-	return &Handler{se: srv}
+func New(srv *server.Server, c model.MyCookie) *Handler {
+	return &Handler{se: srv, MyCookie: c}
 }
 
 // GetUser get info about user from db
 func (h *Handler) GetUser(c echo.Context) error {
-	claims, err := h.se.Validation(c)
+	claims, err := h.validation(c)
 	if err != nil {
-		if err == server.ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, nil)
+		if err == ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, err.Error())
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	user, err := h.se.GetUser(c.Request().Context(), claims.Id)
+	user, err := h.se.GetUser(c.Request().Context(), claims.ID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -39,10 +40,10 @@ func (h *Handler) GetUser(c echo.Context) error {
 
 // UpdateUser update user in db
 func (h *Handler) UpdateUser(c echo.Context) error {
-	claims, err := h.se.Validation(c)
+	claims, err := h.validation(c)
 	if err != nil {
-		if err == server.ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, nil)
+		if err == ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, err.Error())
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -61,10 +62,10 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 
 // DeleteUser delete user from db
 func (h *Handler) DeleteUser(c echo.Context) error {
-	claims, err := h.se.Validation(c)
+	claims, err := h.validation(c)
 	if err != nil {
-		if err == server.ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, nil)
+		if err == ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, err.Error())
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}

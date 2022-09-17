@@ -10,11 +10,12 @@ import (
 
 // Server ...
 type Server struct {
-	rps *repository.PostgresDB
+	rps    *repository.PostgresDB
+	JWTKey []byte
 }
 
 // New create new connection
-func New(repo *repository.PostgresDB) *Server {
+func New(repo *repository.PostgresDB, jwtKey []byte) *Server {
 	return &Server{rps: repo}
 }
 

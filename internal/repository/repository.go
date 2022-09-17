@@ -3,6 +3,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
@@ -70,11 +71,12 @@ func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) 
 // Get : select one user by his ID
 func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, error) {
 	p := model.UserModel{}
-	err := r.Pool.QueryRow(ctx, "select username,name,password from persons where id=$1", id).Scan(
-		&p.Username, &p.Name, &p.Password)
+	err := r.Pool.QueryRow(ctx, "select username,name from persons where id=$1", id).Scan(
+		&p.Username, &p.Name)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("user with this id doesnt exist: %v", err)
+			err = errors.New("user with this id/username doesnt exist")
+			return nil, err
 		}
 		log.Errorf("database error, select by id: %v", err)
 		return nil, err
@@ -86,7 +88,7 @@ func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, erro
 func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserModel, error) {
 	p := model.UserModel{}
 	err := r.Pool.QueryRow(ctx, "select id,username,password from persons where username=$1", username).Scan(
-		&p.ID, &p.Username, &p.Name, &p.Password)
+		&p.ID, &p.Username, &p.Password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, fmt.Errorf("user with this id doesnt exist: %v", err)

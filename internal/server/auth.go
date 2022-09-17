@@ -4,11 +4,10 @@ package server
 import (
 	"context"
 	"errors"
-	"net/http"
+	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/golang-jwt/jwt"
-	"github.com/labstack/echo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,12 +16,8 @@ var (
 	ErrorEmptyUsername = errors.New("username couldnt be empty")
 	// ErrorComparePassword false password
 	ErrorComparePassword = errors.New("passwrod not correct")
-	// ErrorStatusUnautharized unutharized
-	ErrorStatusUnautharized = errors.New("Unauthorized")
 	// JwtKey secure key
-	JwtKey = []byte("super-key")
-	// tknStr token in string format
-	tknStr string
+	// JwtKey = []byte("super-key")
 )
 
 // RegistrationUser register new user, hash his password
@@ -39,6 +34,7 @@ func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) 
 
 // Authentication check user password, extradition jwt tokens
 func (s *Server) Authentication(ctx context.Context, authForm *model.AuthenticationForm) (string, error) {
+
 	user, err := s.rps.GetAuth(ctx, authForm.Username)
 	if err != nil {
 		return "", err
@@ -47,7 +43,7 @@ func (s *Server) Authentication(ctx context.Context, authForm *model.Authenticat
 	if err != nil {
 		return "", err
 	}
-	token, err := generateJWT(user)
+	token, err := s.generateJWT(user)
 	if err != nil {
 		return "", err
 	}
@@ -55,16 +51,16 @@ func (s *Server) Authentication(ctx context.Context, authForm *model.Authenticat
 }
 
 // generateJWT ...
-func generateJWT(user *model.UserModel) (string, error) {
+func (s *Server) generateJWT(user *model.UserModel) (string, error) {
 	claims := model.JWTClaims{
 		ID:       user.ID,
 		Username: user.Username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: model.ExpirationTime.Unix(),
+			ExpiresAt: time.Now().Add(1 * time.Minute).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	accessTokenStr, err := token.SignedString(JwtKey)
+	accessTokenStr, err := token.SignedString(s.JWTKey)
 	if err != nil {
 		return "", err
 	}
@@ -89,30 +85,4 @@ func comparePassword(password, hashedPassword string) error {
 		return err
 	}
 	return nil
-}
-
-// Validation check token
-func (s *Server) Validation(c echo.Context) (model.JWTClaims, error) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return model.JWTClaims{}, ErrorStatusUnautharized
-		}
-		return model.JWTClaims{}, err
-	}
-	tknStr = cookie.Value
-	claims := &model.JWTClaims{}
-	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return JwtKey, nil
-	})
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			return model.JWTClaims{}, err
-		}
-		return model.JWTClaims{}, err
-	}
-	if !tkn.Valid {
-		return model.JWTClaims{}, err
-	}
-	return *claims, nil
 }
