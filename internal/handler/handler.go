@@ -53,7 +53,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	err = h.se.UpdateUser(c.Request().Context(), claims.Id, &person)
+	err = h.se.UpdateUser(c.Request().Context(), claims.ID, &person)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -69,7 +69,7 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	err = h.se.DeleteUser(c.Request().Context(), claims.Id)
+	err = h.se.DeleteUser(c.Request().Context(), claims.ID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}

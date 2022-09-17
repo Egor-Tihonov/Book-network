@@ -18,6 +18,7 @@ type PostgresDB struct {
 }
 
 var (
+	//ErrorUserDoesntExist ...
 	ErrorUserDoesntExist = errors.New("user with this id/username doesnt exist")
 )
 

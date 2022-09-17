@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/config"
 	"github.com/Egor-Tihonov/Book-network/internal/handler"
@@ -40,7 +41,7 @@ func main() {
 	e.DELETE("/user/delete", h.DeleteUser)
 	e.POST("/user/logout", h.Logout)
 
-	err = e.Start(":8000")
+	err = http.ListenAndServe(":8000", e)
 	if err != nil {
 		logrus.Fatalf("error started server")
 	}
