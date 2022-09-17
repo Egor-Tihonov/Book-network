@@ -73,5 +73,17 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
+	c.SetCookie(&http.Cookie{
+		Path:   h.CookiePath,
+		Name:   h.CookieName,
+		Value:  "",
+		MaxAge: -1,
+	})
+	if err != nil {
+		if err == ErrorStatusUnautharized {
+			return c.JSON(http.StatusUnauthorized, nil)
+		}
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
 	return c.JSON(http.StatusOK, nil)
 }
