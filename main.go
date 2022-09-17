@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Connection was failed, %e", err)
 	}
-
+	defer repo.Pool.Close()
 	srv := server.New(repo, []byte(cfg.JWTKey))
 	h := handler.New(srv, model.MyCookie{
 		CookieName:   cfg.CookieName,
@@ -43,6 +43,7 @@ func main() {
 
 	err = http.ListenAndServe(":8000", e)
 	if err != nil {
+		repo.Pool.Close()
 		logrus.Fatalf("error started server")
 	}
 }
