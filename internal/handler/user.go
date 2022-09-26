@@ -7,7 +7,7 @@ import (
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/Egor-Tihonov/Book-network/internal/server"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
@@ -35,7 +35,12 @@ func (h *Handler) GetUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, user)
+	posts, err := h.GetPosts(c.Request().Context(), claims.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	page := getPage(posts, user)
+	return c.JSON(http.StatusOK, page)
 }
 
 // UpdateUser update user in db
@@ -74,10 +79,11 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Path:   h.CookiePath,
-		Name:   h.CookieName,
-		Value:  "",
-		MaxAge: -1,
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Name:     h.CookieName,
+		Value:    "",
+		MaxAge:   -1,
 	})
 	if err != nil {
 		if err == ErrorStatusUnautharized {
@@ -86,4 +92,13 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
+}
+
+func getPage(posts []*model.Post, user *model.UserModel) *model.Page {
+	page := &model.Page{
+		Username: user.Username,
+		Name:     user.Name,
+		Posts:    posts,
+	}
+	return page
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"github.com/golang-jwt/jwt"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
@@ -48,10 +48,11 @@ func (h *Handler) Authentication(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Path:   h.CookiePath,
-		Name:   h.CookieName,
-		Value:  accessToken,
-		MaxAge: h.CookieMaxAge,
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Name:     h.CookieName,
+		Value:    accessToken,
+		MaxAge:   h.CookieMaxAge,
 	})
 	return c.JSON(http.StatusOK, http.NoBody)
 }
@@ -60,10 +61,11 @@ func (h *Handler) Authentication(c echo.Context) error {
 func (h *Handler) Logout(c echo.Context) error {
 	_, err := h.validation(c)
 	c.SetCookie(&http.Cookie{
-		Path:   h.CookiePath,
-		Name:   h.CookieName,
-		Value:  "",
-		MaxAge: -1,
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Name:     h.CookieName,
+		Value:    "",
+		MaxAge:   -1,
 	})
 	if err != nil {
 		if err == ErrorStatusUnautharized {

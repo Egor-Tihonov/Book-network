@@ -32,3 +32,9 @@ type MyCookie struct {
 	CookieMaxAge int
 	CookiePath   string
 }
+
+type Page struct {
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	Posts    []*Post
+}

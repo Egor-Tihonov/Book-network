@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/labstack/gommon/log"
+	"github.com/sirupsen/logrus"
 )
 
 // PostgresDB db
@@ -37,7 +37,7 @@ func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error 
 	_, err := r.Pool.Exec(ctx, "insert into persons(id,username,name,password) values($1,$2,$3,$4)",
 		newID, &person.Username, &person.Name, &person.Password)
 	if err != nil {
-		log.Errorf("database error with create user: %v", err)
+		logrus.Errorf("database error with create user: %e", err)
 		return err
 	}
 	return nil
@@ -53,7 +53,7 @@ func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 		if err == pgx.ErrNoRows {
 			return ErrorUserDoesntExist
 		}
-		log.Errorf("error with delete user %v", err)
+		logrus.Errorf("error with delete user %e", err)
 		return err
 	}
 	return nil
@@ -66,7 +66,7 @@ func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) 
 		return ErrorUserDoesntExist
 	}
 	if err != nil {
-		log.Errorf("error with update user %v", err)
+		logrus.Errorf("error with update user %e", err)
 		return err
 	}
 	return nil
@@ -79,10 +79,9 @@ func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, erro
 		&p.Username, &p.Name)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-
 			return nil, ErrorUserDoesntExist
 		}
-		log.Errorf("database error, select by id: %v", err)
+		logrus.Errorf("database error, select by id: %e", err)
 		return nil, err
 	}
 	return &p, nil
@@ -97,7 +96,7 @@ func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserM
 		if err == pgx.ErrNoRows {
 			return nil, ErrorUserDoesntExist
 		}
-		log.Errorf("database error, select by id: %v", err)
+		logrus.Errorf("database error, select by id: %e", err)
 		return nil, err
 	}
 	return &p, nil

@@ -12,12 +12,8 @@ import (
 )
 
 var (
-	// ErrorEmptyUsername empty username
-	ErrorEmptyUsername = errors.New("username couldnt be empty")
 	// ErrorComparePassword false password
 	ErrorComparePassword = errors.New("passwrod not correct")
-	// JwtKey secure key
-	// JwtKey = []byte("super-key")
 )
 
 // RegistrationUser register new user, hash his password
@@ -25,9 +21,6 @@ func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) 
 	err := hashPassword(person)
 	if err != nil {
 		return err
-	}
-	if person.Username == "" {
-		return ErrorEmptyUsername
 	}
 	return s.rps.Create(ctx, person)
 }
