@@ -48,11 +48,10 @@ func (h *Handler) Authentication(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Name:     h.CookieName,
-		Value:    accessToken,
-		MaxAge:   h.CookieMaxAge,
+		Name:   h.CookieName,
+		Path:   h.CookiePath,
+		Value:  accessToken,
+		MaxAge: h.CookieMaxAge,
 	})
 	return c.JSON(http.StatusOK, http.NoBody)
 }
@@ -61,11 +60,10 @@ func (h *Handler) Authentication(c echo.Context) error {
 func (h *Handler) Logout(c echo.Context) error {
 	_, err := h.validation(c)
 	c.SetCookie(&http.Cookie{
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Name:     h.CookieName,
-		Value:    "",
-		MaxAge:   -1,
+		Name:   h.CookieName,
+		Path:   h.CookiePath,
+		Value:  "",
+		MaxAge: -1,
 	})
 	if err != nil {
 		if err == ErrorStatusUnautharized {

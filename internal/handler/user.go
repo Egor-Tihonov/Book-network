@@ -79,11 +79,10 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Name:     h.CookieName,
-		Value:    "",
-		MaxAge:   -1,
+		Name:   h.CookieName,
+		Path:   h.CookiePath,
+		Value:  "",
+		MaxAge: -1,
 	})
 	if err != nil {
 		if err == ErrorStatusUnautharized {
