@@ -41,7 +41,7 @@ func main() {
 	e.PUT("/user", h.UpdateUser)
 	e.DELETE("/user", h.DeleteUser)
 	e.POST("/user/logout", h.Logout)
-	e.POST("/user/post", h.CreatePost)
+	e.POST("/user/new-post", h.CreatePost)
 
 	err = e.Start(":8000")
 	if err != nil {

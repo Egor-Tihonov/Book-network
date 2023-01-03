@@ -45,7 +45,7 @@ func (h *Handler) Authentication(c echo.Context) error {
 	accessToken, err := h.se.Authentication(c.Request().Context(), &authForm)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusNotFound, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
 		Name:   h.CookieName,
