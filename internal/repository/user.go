@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
-	"github.com/Egor-Tihonov/Book-network/internal/user_errors"
+	"github.com/Egor-Tihonov/Book-network/internal/errmodel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"

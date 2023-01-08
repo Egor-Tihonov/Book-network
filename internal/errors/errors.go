@@ -1,5 +1,5 @@
 /*creatte user errors models(add user errors that already exist)*/
-package user_errors
+package errmodel
 
 import "errors"
 
