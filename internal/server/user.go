@@ -20,12 +20,12 @@ func New(repo *repository.PostgresDB, jwtKey []byte) *Server {
 }
 
 // GetUser get user from db
-func (s *Server) GetUser(ctx context.Context, id string) (*model.UserModel, error) {
+func (s *Server) GetUser(ctx context.Context, id string) (*model.User, error) {
 	return s.rps.Get(ctx, id)
 }
 
 // UpdateUser add/replace new information
-func (s *Server) UpdateUser(ctx context.Context, id string, mdl *model.UserModel) error {
+func (s *Server) UpdateUser(ctx context.Context, id string, mdl *model.UserUpdate) error {
 	return s.rps.Update(ctx, id, mdl)
 }
 

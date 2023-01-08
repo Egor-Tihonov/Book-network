@@ -26,41 +26,36 @@ func New(srv *server.Server, c model.MyCookie) *Handler {
 func (h *Handler) GetUser(c echo.Context) error {
 	claims, err := h.validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == echo.ErrUnauthorized {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	user, err := h.se.GetUser(c.Request().Context(), claims.ID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	posts, err := h.GetPosts(c.Request().Context(), claims.ID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
-	}
-	page := getPage(posts, user)
-	return c.JSON(http.StatusOK, page)
+	return c.JSON(http.StatusOK, user)
 }
 
 // UpdateUser update user in db
 func (h *Handler) UpdateUser(c echo.Context) error {
 	claims, err := h.validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == echo.ErrUnauthorized {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	person := model.UserModel{}
-	err = json.NewDecoder(c.Request().Body).Decode(&person)
+	newClaims := model.UserUpdate{}
+	err = json.NewDecoder(c.Request().Body).Decode(&newClaims)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
-		return c.JSON(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	err = h.se.UpdateUser(c.Request().Context(), claims.ID, &person)
+	err = h.se.UpdateUser(c.Request().Context(), claims.ID, &newClaims)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }
@@ -69,14 +64,14 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 func (h *Handler) DeleteUser(c echo.Context) error {
 	claims, err := h.validation(c)
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, err.Error())
+		if err == echo.ErrUnauthorized {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	err = h.se.DeleteUser(c.Request().Context(), claims.ID)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
 		Name:   h.CookieName,
@@ -85,19 +80,10 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		MaxAge: -1,
 	})
 	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, nil)
+		if err == echo.ErrUnauthorized {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
-}
-
-func getPage(posts []*model.Post, user *model.UserModel) *model.Page {
-	page := &model.Page{
-		Username: user.Username,
-		Name:     user.Name,
-		Posts:    posts,
-	}
-	return page
 }

@@ -3,7 +3,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
@@ -13,8 +12,7 @@ import (
 )
 
 var (
-	// ErrorStatusUnautharized unutharized
-	ErrorStatusUnautharized = errors.New("Unauthorized")
+
 	// tknStr token in string format
 	tknStr string
 )
@@ -25,11 +23,11 @@ func (h *Handler) Registration(c echo.Context) error {
 	err := json.NewDecoder(c.Request().Body).Decode(&person)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
-		return c.JSON(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	err = h.se.RegistrationUser(c.Request().Context(), &person)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return echo.NewHTTPError(404, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }
@@ -40,37 +38,29 @@ func (h *Handler) Authentication(c echo.Context) error {
 	err := json.NewDecoder(c.Request().Body).Decode(&authForm)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
-		return c.JSON(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	accessToken, err := h.se.Authentication(c.Request().Context(), &authForm)
 
 	if err != nil {
-		return c.JSON(http.StatusNotFound, err.Error())
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Name:   h.CookieName,
-		Path:   h.CookiePath,
-		Value:  accessToken,
-		MaxAge: h.CookieMaxAge,
+		Name:  h.CookieName,
+		Path:  h.CookiePath,
+		Value: accessToken,
 	})
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
 // Logout ...
 func (h *Handler) Logout(c echo.Context) error {
-	_, err := h.validation(c)
 	c.SetCookie(&http.Cookie{
 		Name:   h.CookieName,
 		Path:   h.CookiePath,
 		Value:  "",
 		MaxAge: -1,
 	})
-	if err != nil {
-		if err == ErrorStatusUnautharized {
-			return c.JSON(http.StatusUnauthorized, nil)
-		}
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
 	return c.JSON(http.StatusOK, nil)
 }
 
@@ -79,7 +69,7 @@ func (h *Handler) validation(c echo.Context) (*model.JWTClaims, error) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
 		if err == http.ErrNoCookie {
-			return nil, ErrorStatusUnautharized
+			return nil, echo.ErrUnauthorized
 		}
 		return nil, err
 	}
@@ -90,12 +80,12 @@ func (h *Handler) validation(c echo.Context) (*model.JWTClaims, error) {
 	})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			return nil, err
+			return nil, echo.ErrUnauthorized
 		}
 		return nil, err
 	}
 	if !tkn.Valid {
-		return nil, err
+		return nil, echo.ErrUnauthorized
 	}
 	return claims, nil
 }

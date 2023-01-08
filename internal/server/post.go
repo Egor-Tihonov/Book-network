@@ -8,6 +8,9 @@ import (
 )
 
 func (s *Server) NewPost(ctx context.Context, userId string, post *model.Post) error {
+	if(post.Content=="" || post.Title == "" || post.AuthorName == "" || post.AuthorSurname == ""){
+		return nil
+	}
 	ids, err := s.rps.GetForCheckPosts(ctx, userId)
 	if err != nil {
 		return err

@@ -33,8 +33,18 @@ type MyCookie struct {
 	CookiePath   string
 }
 
-type Page struct {
+//User for response to ckient
+type User struct {
 	Username string `json:"username"`
 	Name     string `json:"name"`
-	Posts    []*Post
+	Status   string `json:"status"`
+}
+
+type UserUpdate struct {
+	Status  string `json:"status"`
+	City    string `json:"city"`
+	Country string `json:"country"`
+	Phone   string `json:"phone"`
+	Email   string `json:"email"`
+	Bthsday string `json:"bthsday"`
 }

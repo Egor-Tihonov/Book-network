@@ -3,9 +3,9 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
+	"github.com/Egor-Tihonov/Book-network/internal/user_errors"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -18,13 +18,13 @@ type PostgresDB struct {
 }
 
 var (
-	//ErrorUserDoesntExist ...
-	ErrorUserDoesntExist = errors.New("user with this id/username doesnt exist")
+//ErrorUserDoesntExist ...
+
 )
 
 // New create new connection with db
-func New(connString string) (*PostgresDB, error) {
-	poolP, err := pgxpool.Connect(context.Background(), connString)
+func New( /*connString string*/ ) (*PostgresDB, error) {
+	poolP, err := pgxpool.Connect(context.Background(), "postgresql://postgres:123@localhost:5432/booknetwork") //connString)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +37,7 @@ func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error 
 	_, err := r.Pool.Exec(ctx, "insert into persons(id,username,name,password) values($1,$2,$3,$4)",
 		newID, &person.Username, &person.Name, &person.Password)
 	if err != nil {
-		logrus.Errorf("database error with create user: %e", err)
-		return err
+		return user_errors.ErrorUserAlreadyExist
 	}
 	return nil
 }
@@ -47,11 +46,11 @@ func (r *PostgresDB) Create(ctx context.Context, person *model.UserModel) error 
 func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 	a, err := r.Pool.Exec(ctx, "delete from persons where id=$1", id)
 	if a.RowsAffected() == 0 {
-		return ErrorUserDoesntExist
+		return user_errors.ErrorUserDoesntExist
 	}
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return ErrorUserDoesntExist
+			return user_errors.ErrorUserDoesntExist
 		}
 		logrus.Errorf("error with delete user %e", err)
 		return err
@@ -60,10 +59,11 @@ func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 }
 
 // Update update user in db
-func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) error {
-	a, err := r.Pool.Exec(ctx, "update persons set username=$1,name=$2 where id=$4", &p.Username, &p.Name, id)
+func (r *PostgresDB) Update(ctx context.Context, id string, c *model.UserUpdate) error {
+	a, err := r.Pool.Exec(ctx, "update persons set city=$1, country=$2, status=$3, phone=$4, bthsday=$5, email=$6 where id=$7",
+		&c.City, &c.Country, &c.Status, &c.Phone, &c.Bthsday, &c.Email, id)
 	if a.RowsAffected() == 0 {
-		return ErrorUserDoesntExist
+		return user_errors.ErrorUserDoesntExist
 	}
 	if err != nil {
 		logrus.Errorf("error with update user %e", err)
@@ -73,15 +73,14 @@ func (r *PostgresDB) Update(ctx context.Context, id string, p *model.UserModel) 
 }
 
 // Get : select one user by his ID
-func (r *PostgresDB) Get(ctx context.Context, id string) (*model.UserModel, error) {
-	p := model.UserModel{}
-	err := r.Pool.QueryRow(ctx, "select username,name from persons where id=$1", id).Scan(
-		&p.Username, &p.Name)
+func (r *PostgresDB) Get(ctx context.Context, id string) (*model.User, error) {
+	p := model.User{}
+	err := r.Pool.QueryRow(ctx, "select username,name,status from persons where id=$1", id).Scan(
+		&p.Username, &p.Name, &p.Status)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, ErrorUserDoesntExist
+			return nil, user_errors.ErrorUserDoesntExist
 		}
-		logrus.Errorf("database error, select by id: %e", err)
 		return nil, err
 	}
 	return &p, nil
@@ -94,7 +93,7 @@ func (r *PostgresDB) GetAuth(ctx context.Context, username string) (*model.UserM
 		&p.ID, &p.Username, &p.Password)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, ErrorUserDoesntExist
+			return nil, user_errors.ErrorUserDoesntExist
 		}
 		logrus.Errorf("database error, select by id: %e", err)
 		return nil, err

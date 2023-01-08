@@ -2,16 +2,12 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
+	"github.com/Egor-Tihonov/Book-network/internal/user_errors"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	ErrorNoPosts = errors.New("you dont have any posts")
 )
 
 func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, error) {
@@ -21,7 +17,7 @@ func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, 
 	rows, err := p.Pool.Query(ctx, sql, userid)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, ErrorNoPosts
+			return nil, user_errors.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
 		return nil, err
@@ -86,7 +82,7 @@ func (p *PostgresDB) GetForCheckPosts(ctx context.Context, userId string) ([]str
 	rows, err := p.Pool.Query(ctx, sql, userId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, ErrorNoPosts
+			return nil, user_errors.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
 		return nil, err

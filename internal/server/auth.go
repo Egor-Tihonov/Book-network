@@ -10,12 +10,6 @@ import (
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var (
-	// ErrorComparePassword false password
-	ErrorComparePassword = errors.New("passwrod not correct")
-)
-
 // RegistrationUser register new user, hash his password
 func (s *Server) RegistrationUser(ctx context.Context, person *model.UserModel) error {
 	err := hashPassword(person)
@@ -48,7 +42,7 @@ func (s *Server) generateJWT(user *model.UserModel) (accessTokenStr string, err 
 		ID:       user.ID,
 		Username: user.Username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(12 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
