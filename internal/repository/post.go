@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
-	"github.com/Egor-Tihonov/Book-network/internal/errmodel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, 
 	rows, err := p.Pool.Query(ctx, sql, userid)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, user_errors.ErrorNoPosts
+			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
 		return nil, err
@@ -82,7 +81,7 @@ func (p *PostgresDB) GetForCheckPosts(ctx context.Context, userId string) ([]str
 	rows, err := p.Pool.Query(ctx, sql, userId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, user_errors.ErrorNoPosts
+			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
 		return nil, err

@@ -6,28 +6,16 @@ import (
 	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
-	"github.com/Egor-Tihonov/Book-network/internal/server"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
-
-// Handler ...
-type Handler struct {
-	se *server.Server
-	model.MyCookie
-}
-
-// New create new handler
-func New(srv *server.Server, c model.MyCookie) *Handler {
-	return &Handler{se: srv, MyCookie: c}
-}
 
 // GetUser get info about user from db
 func (h *Handler) GetUser(c echo.Context) error {
 	claims, err := h.validation(c)
 	if err != nil {
 		if err == echo.ErrUnauthorized {
-			return echo.NewHTTPError(http.StatusUnauthorized)
+			return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 		}
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -83,7 +71,7 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		if err == echo.ErrUnauthorized {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }

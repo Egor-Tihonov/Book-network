@@ -12,20 +12,19 @@ import (
 )
 
 var (
-
 	// tknStr token in string format
 	tknStr string
 )
 
 // Registration create new user
 func (h *Handler) Registration(c echo.Context) error {
-	person := model.UserModel{}
-	err := json.NewDecoder(c.Request().Body).Decode(&person)
+	user := model.UserModel{}
+	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	err = h.se.RegistrationUser(c.Request().Context(), &person)
+	err = h.se.RegistrationUser(c.Request().Context(), &user)
 	if err != nil {
 		return echo.NewHTTPError(404, err.Error())
 	}
