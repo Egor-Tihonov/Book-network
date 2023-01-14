@@ -39,8 +39,8 @@ func (r *PostgresDB) Delete(ctx context.Context, id string) error {
 
 // Update update user in db
 func (r *PostgresDB) Update(ctx context.Context, id string, c *model.UserUpdate) error {
-	a, err := r.Pool.Exec(ctx, "update users set city=$1, country=$2, status=$3, phone=$4, bthsday=$5, email=$6 where id=$7",
-		&c.City, &c.Country, &c.Status, &c.Phone, &c.Bthsday, &c.Email, id)
+	a, err := r.Pool.Exec(ctx, "update users set status=$1, email=$2 where id=$3",
+		&c.Status, &c.Email, id)
 	if a.RowsAffected() == 0 {
 		return model.ErrorUserDoesntExist
 	}

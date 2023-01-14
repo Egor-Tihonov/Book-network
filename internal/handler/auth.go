@@ -78,6 +78,9 @@ func (h *Handler) validation(c echo.Context) (*model.JWTClaims, error) {
 		return h.se.JWTKey, nil
 	})
 	if err != nil {
+		if jwt.ValidationErrorExpired == 16{
+			return nil, echo.ErrUnauthorized
+		}
 		if err == jwt.ErrSignatureInvalid {
 			return nil, echo.ErrUnauthorized
 		}
