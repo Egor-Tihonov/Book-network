@@ -9,30 +9,27 @@ import (
 )
 
 func (h *Handler) CreatePost(c echo.Context) error {
-	claims, err := h.validation(c)
+	cookie, err := c.Cookie("user")
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+		return echo.NewHTTPError(401, nil)
 	}
 	post := model.Post{}
 	err = json.NewDecoder(c.Request().Body).Decode(&post)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = h.se.NewPost(c.Request().Context(), claims.ID, &post)
+	err = h.se.NewPost(c.Request().Context(), cookie.Value, &post)
 	if err != nil {
 		return echo.NewHTTPError(404, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
 }
 func (h *Handler) GetPosts(c echo.Context) error {
-	claims, err := h.validation(c)
+	cookie, err := c.Cookie("user")
 	if err != nil {
-		if err == echo.ErrUnauthorized {
-			return echo.NewHTTPError(http.StatusUnauthorized)
-		}
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(401, nil)
 	}
-	posts, err := h.se.GetPosts(c.Request().Context(), claims.ID)
+	posts, err := h.se.GetPosts(c.Request().Context(), cookie.Value)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

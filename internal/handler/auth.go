@@ -6,14 +6,8 @@ import (
 	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-)
-
-var (
-	// tknStr token in string format
-	tknStr string
 )
 
 // Registration create new user
@@ -39,55 +33,38 @@ func (h *Handler) Authentication(c echo.Context) error {
 		log.Errorf("failed parse json, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	accessToken, err := h.se.Authentication(c.Request().Context(), &authForm)
 
+	user, err := h.se.Authentication(c.Request().Context(), &authForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
-	c.SetCookie(&http.Cookie{
-		Name:  h.CookieName,
-		Path:  h.CookiePath,
-		Value: accessToken,
-	})
+
+	cookieToken, cookieUser, err := h.se.GenerateTokensAndSetCookies(user, c.Request().Context())
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	c.SetCookie(cookieToken)
+	c.SetCookie(cookieUser)
+
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
 // Logout ...
 func (h *Handler) Logout(c echo.Context) error {
 	c.SetCookie(&http.Cookie{
-		Name:   h.CookieName,
-		Path:   h.CookiePath,
+		Name:   "user",
+		Path:   h.se.Co.CookiePath,
+		Value:  "",
+		MaxAge: -1,
+	})
+
+	c.SetCookie(&http.Cookie{
+		Name:   "token",
+		Path:   h.se.Co.CookiePath,
 		Value:  "",
 		MaxAge: -1,
 	})
 	return c.JSON(http.StatusOK, nil)
-}
-
-// Validation check token
-func (h *Handler) validation(c echo.Context) (*model.JWTClaims, error) {
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return nil, echo.ErrUnauthorized
-		}
-		return nil, err
-	}
-	tknStr = cookie.Value
-	claims := &model.JWTClaims{}
-	tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return h.se.JWTKey, nil
-	})
-	if err != nil {
-		if jwt.ValidationErrorExpired == 16{
-			return nil, echo.ErrUnauthorized
-		}
-		if err == jwt.ErrSignatureInvalid {
-			return nil, echo.ErrUnauthorized
-		}
-		return nil, err
-	}
-	if !tkn.Valid {
-		return nil, echo.ErrUnauthorized
-	}
-	return claims, nil
 }

@@ -3,7 +3,7 @@ package model
 import "errors"
 
 var (
-	ErrorNoPosts          = errors.New("you dont have any posts")
-	ErrorUserDoesntExist  = errors.New("user with this email/username doesnt exist")
-	ErrorUserAlreadyExist = errors.New("user with this email/username already exist")
+	ErrorNoPosts          = errors.New("у вас нету ни одной рецензии")
+	ErrorUserDoesntExist  = errors.New("пользователь с этим никнеймом/email не зарегестрирован")
+	ErrorUserAlreadyExist = errors.New("этот никнейм/email уже занят")
 )
