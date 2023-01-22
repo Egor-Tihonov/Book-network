@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/mail"
+	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +18,7 @@ func (s *Service) RegistrationUser(ctx context.Context, user *model.UserModel) e
 		return err
 	}
 	user.Password = hashPassword
-	return s.rps.Create(ctx, user)
+	return s.rps.Create(ctx, user, time.Now())
 }
 
 // Authentication check user password, extradition jwt tokens

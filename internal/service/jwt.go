@@ -9,8 +9,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-/*aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa*/
-func (s *Service) GenerateTokensAndSetCookies(user *model.AuthUserModel, c context.Context) (cookieToken *http.Cookie, cookieUser *http.Cookie, err error) {
+
+func (s *Service) GenerateTokensAndSetCookies(user *model.AuthUserModel, c context.Context) (cookieToken , cookieUser *http.Cookie, err error) {
 	accessToken, exp, err := s.generateAccessToken(user)
 	if err != nil {
 		return

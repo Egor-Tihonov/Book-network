@@ -72,5 +72,12 @@ func (h *Handler) DeleteUser(c echo.Context) error {
 		MaxAge: -1,
 	})
 
+	c.SetCookie(&http.Cookie{
+		Name:   "user",
+		Path:   h.se.Co.CookiePath,
+		Value:  "",
+		MaxAge: -1,
+	})
+
 	return c.JSON(http.StatusOK, nil)
 }

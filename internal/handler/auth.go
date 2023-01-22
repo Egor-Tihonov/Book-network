@@ -15,7 +15,7 @@ func (h *Handler) Registration(c echo.Context) error {
 	user := model.UserModel{}
 	err := json.NewDecoder(c.Request().Body).Decode(&user)
 	if err != nil {
-		log.Errorf("failed parse json, %e", err)
+		log.Errorf("handler: failed parse json, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	err = h.se.RegistrationUser(c.Request().Context(), &user)
@@ -30,18 +30,20 @@ func (h *Handler) Authentication(c echo.Context) error {
 	authForm := model.AuthenticationForm{}
 	err := json.NewDecoder(c.Request().Body).Decode(&authForm)
 	if err != nil {
-		log.Errorf("failed parse json, %e", err)
+		log.Errorf("handler: failed parse json, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	user, err := h.se.Authentication(c.Request().Context(), &authForm)
 	if err != nil {
+		log.Errorf("handler: failed with auth, %e", err)
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
 
 	cookieToken, cookieUser, err := h.se.GenerateTokensAndSetCookies(user, c.Request().Context())
 
 	if err != nil {
+		log.Errorf("handler: failed with auth, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

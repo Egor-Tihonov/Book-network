@@ -33,7 +33,7 @@ func main() {
 
 	srv := service.New(repo, []byte( /*cfg.JWTKey*/ "SUPER-KEY"), model.MyCookie{
 		CookieTokenName: "token",
-		CookieUserName:  "user", //cfg.CookieName,
+		CookieUserName:  "user",
 		CookiePath:      "/",
 	},
 	)
@@ -49,9 +49,9 @@ func main() {
 	}))*/
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowOrigins: []string{"http://localhost:3000"},
-		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 	}))
 	e.POST("/login", h.Authentication)
@@ -62,6 +62,8 @@ func main() {
 	e.POST("/user/logout", h.Logout)
 	e.POST("/user/new-post", h.CreatePost, mid.IsLoggedIn)
 	e.GET("/user/posts", h.GetPosts, mid.IsLoggedIn)
+	e.GET("/user/last-posts", h.GetLastPosts, mid.IsLoggedIn)
+	e.GET("/user/post/:id", h.GetPost, mid.IsLoggedIn)
 
 	err = e.Start(":8000")
 	if err != nil {
