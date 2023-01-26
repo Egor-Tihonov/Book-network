@@ -8,6 +8,11 @@ type Post struct {
 	Content       string `json:"content"`
 }
 
+type LastPost struct {
+	PostId string `json:"postId"`
+	Title  string `json:"title"`
+}
+
 type Author struct {
 	ID            string `json:"id"`
 	AuthorName    string `json:"authorName"`

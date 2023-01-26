@@ -8,8 +8,12 @@ import (
 )
 
 // GetUser get user from db
-func (s *Service) GetUser(ctx context.Context, email string) (*model.User, error) {
-	return s.rps.Get(ctx, email)
+func (s *Service) GetUser(ctx context.Context, id string) (*model.User, error) {
+	return s.rps.Get(ctx, id)
+}
+
+func (s *Service) GetLastUsers(ctx context.Context) ([]*model.LastUsers, error) {
+	return s.rps.GetLastUsersIDs(ctx)
 }
 
 // UpdateUser add/replace new information
@@ -23,7 +27,7 @@ func (s *Service) UpdateUser(ctx context.Context, id string, user *model.UserUpd
 	if user.Name == "" {
 		user.Name = oldUser.Name
 	}
-	
+
 	if user.Password == "" {
 		user.Password = oldUser.Password
 	} else {
@@ -46,7 +50,23 @@ func (s *Service) UpdateUser(ctx context.Context, id string, user *model.UserUpd
 	return s.rps.Update(ctx, id, user)
 }
 
+func (s *Service) AddSubscriprion(ctx context.Context, subid, id string) error {
+	return s.rps.AddSubscriprion(ctx, subid, id)
+}
+
+func (s *Service) DeleteSubscription(ctx context.Context, subid, id string) error {
+	return s.rps.DeleteSubscription(ctx, subid, id)
+}
+
 // DeleteUser delete user from db
 func (s *Service) DeleteUser(ctx context.Context, id string) error {
 	return s.rps.Delete(ctx, id)
+}
+
+func (s *Service) CheckSubs(ctx context.Context, id, userid string) (bool, error) {
+	return s.rps.CheckSubs(ctx, id, userid)
+}
+
+func (s *Service) GetSubs(ctx context.Context, id string) ([]*model.User, error) {
+	return s.rps.GetSubs(ctx, id)
 }

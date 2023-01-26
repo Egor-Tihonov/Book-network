@@ -114,11 +114,36 @@ func (p *PostgresDB) GetPost(ctx context.Context, userid, postid string) (*model
 	return &post, err
 }
 
-func (p *PostgresDB) GetLast(ctx context.Context, userid string) ([]*model.Post, error){
-	var posts []*model.Post
-	sql := "select author.name,author.surname,books.title,posts.content,posts.id from books inner join author on author.id=books.idauthor" +
+func (p *PostgresDB) GetLast(ctx context.Context, userid string) ([]*model.LastPost, error) {
+	var lastPosts []*model.LastPost
+	sql := "select posts.id,books.title from books inner join author on author.id=books.idauthor" +
 		" inner join posts on books.id=posts.idbook where posts.userid=$1 and EXTRACT(YEAR FROM dt_create) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM dt_create) = EXTRACT (WEEK FROM NOW()) order by dt_create desc "
 	rows, err := p.Pool.Query(ctx, sql, userid)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, model.ErrorNoPosts
+		}
+		logrus.Errorf("database error with select all posts, %e", err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		lastPost := model.LastPost{}
+		err = rows.Scan(&lastPost.PostId, &lastPost.Title)
+		if err != nil {
+			logrus.Errorf("database error with select all posts, %e", err)
+			return nil, err
+		}
+		lastPosts = append(lastPosts, &lastPost)
+	}
+	return lastPosts, err
+}
+
+func (p *PostgresDB) GetAllPosts(ctx context.Context, id string) ([]*model.Post, error) {
+	var posts []*model.Post
+	sql := "select author.name,author.surname,books.title,posts.content,posts.id from books inner join author on author.id=books.idauthor" +
+		" inner join posts on books.id=posts.idbook where posts.userid = $1 or posts.userid in (select unnest(subscriptions) from users where id=$1) order by dt_create desc"
+	rows, err := p.Pool.Query(ctx, sql, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, model.ErrorNoPosts

@@ -12,6 +12,7 @@ type UserModel struct {
 
 //User for response to ckient
 type User struct {
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	Name     string `json:"name"`
 	Status   string `json:"status"`
@@ -24,4 +25,14 @@ type UserUpdate struct {
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	Username string `json:"username"`
+}
+
+type LastUsers struct {
+	Id       string `json:"Id"`
+	Username string `json:"username"`
+}
+
+type GetOtherUserResponse struct {
+	User         *User
+	Subscription bool `json:"subscription"`
 }

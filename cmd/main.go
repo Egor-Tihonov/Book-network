@@ -56,14 +56,22 @@ func main() {
 	}))
 	e.POST("/login", h.Authentication)
 	e.POST("/sign-up", h.Registration)
-	e.GET("/user", h.GetUser, mid.IsLoggedIn)
-	e.PUT("/user", h.UpdateUser, mid.IsLoggedIn)
-	e.DELETE("/user", h.DeleteUser, mid.IsLoggedIn)
+
 	e.POST("/user/logout", h.Logout)
-	e.POST("/user/new-post", h.CreatePost, mid.IsLoggedIn)
-	e.GET("/user/posts", h.GetPosts, mid.IsLoggedIn)
+	e.PUT("/user/update", h.UpdateUser, mid.IsLoggedIn)
+	e.DELETE("/user/delete", h.DeleteUser, mid.IsLoggedIn)
+	e.GET("/user/:id", h.GetOtherUser, mid.IsLoggedIn)
+	e.GET("/user", h.GetUser, mid.IsLoggedIn)
+	e.GET("/user/following", h.MySubscriptions, mid.IsLoggedIn)
+	e.GET("/newusers", h.GetLastUsers, mid.IsLoggedIn)
+	e.PUT("/user/add-subscription/:id", h.AddSubscription, mid.IsLoggedIn)
+	e.PUT("/user/remove-subscription/:id", h.DeleteSubscription, mid.IsLoggedIn)
+
+	e.GET("/:id/posts", h.GetPosts, mid.IsLoggedIn)
 	e.GET("/user/last-posts", h.GetLastPosts, mid.IsLoggedIn)
-	e.GET("/user/post/:id", h.GetPost, mid.IsLoggedIn)
+	e.GET("/post/:id", h.GetPost, mid.IsLoggedIn)
+	e.POST("/user/new-post", h.CreatePost, mid.IsLoggedIn)
+	e.GET("/posts", h.GetAllPosts, mid.IsLoggedIn)
 
 	err = e.Start(":8000")
 	if err != nil {

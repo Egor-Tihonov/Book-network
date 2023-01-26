@@ -45,6 +45,11 @@ func (s *Service) GetPost(ctx context.Context, userid, postid string) (*model.Po
 	return s.rps.GetPost(ctx, userid, postid)
 }
 
-func (s *Service) GetLast(ctx context.Context, userid string) ([]*model.Post, error) {
+func (s *Service) GetLast(ctx context.Context, userid string) ([]*model.LastPost, error) {
 	return s.rps.GetLast(ctx, userid)
 }
+
+func (s *Service) GetAllPosts(ctx context.Context, id string) ([]*model.Post, error) {
+	return s.rps.GetAllPosts(ctx,id)
+}
+
