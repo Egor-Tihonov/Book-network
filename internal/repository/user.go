@@ -27,7 +27,7 @@ func (p *PostgresDB) Create(ctx context.Context, user *model.UserModel, date tim
 func (p *PostgresDB) Delete(ctx context.Context, id string) error {
 	a, err := p.Pool.Exec(ctx, "delete from users where id=$1", id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return model.ErrorUserDoesntExist
 		}
 		logrus.Errorf("error with delete user %e", err)
@@ -44,7 +44,7 @@ func (p *PostgresDB) GetUserForUpdate(ctx context.Context, id string) (*model.Us
 	err := p.Pool.QueryRow(ctx, "select status,name,username,password from users where id = $1", id).Scan(
 		&user.Status, &user.Name, &user.Username, &user.Password)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		} else {
 			return nil, err
@@ -60,7 +60,7 @@ func (p *PostgresDB) GetLastUsersIDs(ctx context.Context) ([]*model.LastUsers, e
 		" from users where EXTRACT(YEAR FROM joindate) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM joindate) = EXTRACT (WEEK FROM NOW()) order by joindate desc "
 	rows, err := p.Pool.Query(ctx, sql)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all users id, %e", err)
@@ -100,7 +100,7 @@ func (p *PostgresDB) Get(ctx context.Context, id string) (*model.User, error) {
 	err := p.Pool.QueryRow(ctx, "select username,name,status,email,joinDate from users where id=$1", id).Scan(
 		&user.Username, &user.Name, &user.Status, &user.Email, &date)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		}
 		return nil, err
@@ -115,7 +115,7 @@ func (p *PostgresDB) GetAuthByUsername(ctx context.Context, authString string) (
 	err := p.Pool.QueryRow(ctx, "select password,id,email from users where username=$1", authString).Scan(
 		&u.Password, &u.ID, &u.Email)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		}
 		logrus.Errorf("database error, select by id: %e", err)
@@ -130,7 +130,7 @@ func (p *PostgresDB) GetAuthByEmail(ctx context.Context, authString string) (*mo
 	err := p.Pool.QueryRow(ctx, "select password,id,email from users where email=$1", authString).Scan(
 		&u.Password, &u.ID, &u.Email)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		}
 		logrus.Errorf("database error, select by id: %e", err)
@@ -184,7 +184,7 @@ func (p *PostgresDB) GetSubs(ctx context.Context, id string) ([]*model.User, err
 	rows, err := p.Pool.Query(ctx, "select id,name,username,status,email,joindate from users where id IN "+
 		"(select unnest(subscriptions) from users where id=$1)", id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select sub users id, %e", err)

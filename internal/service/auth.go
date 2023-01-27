@@ -3,7 +3,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"net/mail"
 	"time"
 
@@ -39,8 +38,7 @@ func (s *Service) Authentication(ctx context.Context, authForm *model.Authentica
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(authForm.Password))
 	if err != nil {
-		err = errors.New("password is incorrect")
-		return nil, err
+		return nil, model.ErrorPasswordIsIncorrect
 	}
 
 	return user, nil

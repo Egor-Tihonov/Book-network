@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GetUser get user from db
@@ -31,6 +32,10 @@ func (s *Service) UpdateUser(ctx context.Context, id string, user *model.UserUpd
 	if user.Password == "" {
 		user.Password = oldUser.Password
 	} else {
+		err = bcrypt.CompareHashAndPassword([]byte(oldUser.Password), []byte(user.OldPassword))
+		if err != nil {
+			return model.ErrorPasswordIsIncorrect
+		}
 		newHashPassword, err := s.hashPassword(user.Password)
 
 		if err != nil {

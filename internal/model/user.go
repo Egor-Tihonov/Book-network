@@ -21,10 +21,11 @@ type User struct {
 }
 
 type UserUpdate struct {
-	Status   string `json:"status"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
+	Status      string `json:"status"`
+	Password    string `json:"password"`
+	OldPassword string `json:"old_password"`
+	Name        string `json:"name"`
+	Username    string `json:"username"`
 }
 
 type LastUsers struct {

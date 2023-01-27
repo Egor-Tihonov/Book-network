@@ -36,8 +36,11 @@ func (h *Handler) Authentication(c echo.Context) error {
 
 	user, err := h.se.Authentication(c.Request().Context(), &authForm)
 	if err != nil {
+		if err == model.ErrorUserDoesntExist{
+			return echo.NewHTTPError(404, err.Error())
+		}
 		log.Errorf("handler: failed with auth, %e", err)
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		return echo.NewHTTPError(403, err.Error())
 	}
 
 	cookieToken, cookieUser, err := h.se.GenerateTokensAndSetCookies(user, c.Request().Context())

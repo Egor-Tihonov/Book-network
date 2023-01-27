@@ -16,7 +16,7 @@ func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, 
 		" inner join posts on books.id=posts.idbook where posts.userid=$1 order by dt_create desc"
 	rows, err := p.Pool.Query(ctx, sql, userid)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
@@ -67,7 +67,7 @@ func (p *PostgresDB) GetForCheckAuthor(ctx context.Context, name, surname string
 	sql := "select author.id,books.id from author inner join books on books.idauthor=author.id inner join posts on posts.idbook = books.id where author.name =$1 and author.surname = $2"
 	err := p.Pool.QueryRow(ctx, sql, name, surname).Scan(&authorid, &booksid)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return booksid, authorid, nil
 		}
 		logrus.Errorf("error get author from db, %e", err)
@@ -81,7 +81,7 @@ func (p *PostgresDB) GetForCheckPosts(ctx context.Context, userId string) ([]str
 	sql := "select idbook from posts where userid = $1"
 	rows, err := p.Pool.Query(ctx, sql, userId)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
@@ -106,7 +106,7 @@ func (p *PostgresDB) GetPost(ctx context.Context, userid, postid string) (*model
 		" inner join posts on books.id=posts.idbook where posts.userid=$1 and posts.id=$2 order by dt_create desc", userid, postid).Scan(
 		&post.AuthorName, &post.AuthorSurname, &post.Content, &post.PostId, &post.Title)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		return nil, err
@@ -120,7 +120,7 @@ func (p *PostgresDB) GetLast(ctx context.Context, userid string) ([]*model.LastP
 		" inner join posts on books.id=posts.idbook where posts.userid=$1 and EXTRACT(YEAR FROM dt_create) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM dt_create) = EXTRACT (WEEK FROM NOW()) order by dt_create desc "
 	rows, err := p.Pool.Query(ctx, sql, userid)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err.Error())
@@ -145,7 +145,7 @@ func (p *PostgresDB) GetAllPosts(ctx context.Context, id string) ([]*model.Post,
 		" inner join posts on books.id=posts.idbook where posts.userid = $1 or posts.userid in (select unnest(subscriptions) from users where id=$1) order by dt_create desc"
 	rows, err := p.Pool.Query(ctx, sql, id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
 		logrus.Errorf("database error with select all posts, %e", err)
