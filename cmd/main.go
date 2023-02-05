@@ -33,7 +33,6 @@ func main() {
 
 	srv := service.New(repo, []byte( /*cfg.JWTKey*/ "SUPER-KEY"), model.MyCookie{
 		CookieTokenName: "token",
-		CookieUserName:  "user",
 		CookiePath:      "/",
 	},
 	)
@@ -57,7 +56,7 @@ func main() {
 	e.POST("/login", h.Authentication)
 	e.POST("/sign-up", h.Registration)
 
-	e.POST("/user/logout", h.Logout)
+	e.POST("/user/logout", h.Logout, mid.IsLoggedIn)
 	e.PUT("/user/update", h.UpdateUser, mid.IsLoggedIn)
 	e.DELETE("/user/delete", h.DeleteUser, mid.IsLoggedIn)
 	e.GET("/user/:id", h.GetOtherUser, mid.IsLoggedIn)
@@ -68,6 +67,7 @@ func main() {
 	e.PUT("/user/remove-subscription/:id", h.DeleteSubscription, mid.IsLoggedIn)
 
 	e.GET("/:id/posts", h.GetPosts, mid.IsLoggedIn)
+	e.GET("/user/posts", h.GetMyPosts, mid.IsLoggedIn)
 	e.GET("/user/last-posts", h.GetLastPosts, mid.IsLoggedIn)
 	e.GET("/post/:id", h.GetPost, mid.IsLoggedIn)
 	e.POST("/user/new-post", h.CreatePost, mid.IsLoggedIn)

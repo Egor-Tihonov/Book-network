@@ -13,19 +13,11 @@ import (
 
 // GetUser get info about user from db
 func (h *Handler) GetUser(c echo.Context) error {
-
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromParam := claims["id"].(string)
-	if cookie.Value != idFromParam {
-		return echo.NewHTTPError(404, err.Error())
-	}
 
-	user, err := h.se.GetUser(c.Request().Context(), cookie.Value)
+	user, err := h.se.GetUser(c.Request().Context(), idFromParam)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -58,20 +50,13 @@ func (h *Handler) GetOtherUser(c echo.Context) error {
 }
 
 func (h *Handler) AddSubscription(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromParam := claims["id"].(string)
-	if cookie.Value != idFromParam {
-		return echo.NewHTTPError(404, err.Error())
-	}
 
 	subid := c.Param("id")
 
-	err = h.se.AddSubscriprion(c.Request().Context(), subid, idFromParam)
+	err := h.se.AddSubscriprion(c.Request().Context(), subid, idFromParam)
 	if err != nil {
 		return echo.NewHTTPError(405, err.Error())
 	}
@@ -80,24 +65,13 @@ func (h *Handler) AddSubscription(c echo.Context) error {
 }
 
 func (h *Handler) DeleteSubscription(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromParam := claims["id"].(string)
-	if cookie.Value != idFromParam {
-		return echo.NewHTTPError(404, err.Error())
-	}
 
 	subid := c.Param("id")
-	if err != nil {
-		log.Errorf("failed parse json, %e", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
 
-	err = h.se.DeleteSubscription(c.Request().Context(), subid, idFromParam)
+	err := h.se.DeleteSubscription(c.Request().Context(), subid, idFromParam)
 	if err != nil {
 		return echo.NewHTTPError(405, err.Error())
 	}
@@ -116,26 +90,19 @@ func (h *Handler) GetLastUsers(c echo.Context) error {
 
 // UpdateUser update user in db
 func (h *Handler) UpdateUser(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(404, err)
-	}
 
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
 	newClaims := model.UserUpdate{}
-	err = json.NewDecoder(c.Request().Body).Decode(&newClaims)
+	err := json.NewDecoder(c.Request().Body).Decode(&newClaims)
 	if err != nil {
 		log.Errorf("failed parse json, %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	err = h.se.UpdateUser(c.Request().Context(), cookie.Value, &newClaims)
+	err = h.se.UpdateUser(c.Request().Context(), idFromJwt, &newClaims)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -147,17 +114,9 @@ func (h *Handler) GetReviewFeed(c echo.Context) error {
 }
 
 func (h *Handler) MySubscriptions(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(404, err)
-	}
-
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
 	users, err := h.se.GetSubs(c.Request().Context(), idFromJwt)
 	if err != nil {
@@ -169,32 +128,17 @@ func (h *Handler) MySubscriptions(c echo.Context) error {
 
 // DeleteUser delete user from db
 func (h *Handler) DeleteUser(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		return echo.NewHTTPError(404, err)
-	}
-
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
-	err = h.se.DeleteUser(c.Request().Context(), cookie.Value)
+	err := h.se.DeleteUser(c.Request().Context(), idFromJwt)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	c.SetCookie(&http.Cookie{
 		Name:   "token",
-		Path:   h.se.Co.CookiePath,
-		Value:  "",
-		MaxAge: -1,
-	})
-
-	c.SetCookie(&http.Cookie{
-		Name:   "user",
 		Path:   h.se.Co.CookiePath,
 		Value:  "",
 		MaxAge: -1,

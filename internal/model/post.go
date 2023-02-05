@@ -12,9 +12,3 @@ type LastPost struct {
 	PostId string `json:"postId"`
 	Title  string `json:"title"`
 }
-
-type Author struct {
-	ID            string `json:"id"`
-	AuthorName    string `json:"authorName"`
-	AuthorSurname string `json:"authorSurname"`
-}

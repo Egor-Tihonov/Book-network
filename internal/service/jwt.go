@@ -10,14 +10,13 @@ import (
 )
 
 
-func (s *Service) GenerateTokensAndSetCookies(user *model.AuthUserModel, c context.Context) (cookieToken , cookieUser *http.Cookie, err error) {
+func (s *Service) GenerateTokensAndSetCookies(user *model.AuthUserModel, c context.Context) (cookieToken *http.Cookie, err error) {
 	accessToken, exp, err := s.generateAccessToken(user)
 	if err != nil {
 		return
 	}
 
 	cookieToken = s.setTokenCookie(s.Co.CookieTokenName, accessToken, exp, c)
-	cookieUser = s.setUserCookie(user, exp, c)
 	return
 }
 

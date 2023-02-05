@@ -11,26 +11,17 @@ import (
 )
 
 func (h *Handler) CreatePost(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		logrus.Errorf("service: error parse cookie: %e", err)
-		return echo.NewHTTPError(405, err.Error())
-	}
-
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
 	post := model.Post{}
-	err = json.NewDecoder(c.Request().Body).Decode(&post)
+	err := json.NewDecoder(c.Request().Body).Decode(&post)
 	if err != nil {
 		logrus.Errorf("service: error parse json: %e", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = h.se.NewPost(c.Request().Context(), cookie.Value, &post)
+	err = h.se.NewPost(c.Request().Context(), idFromJwt, &post)
 	if err != nil {
 		logrus.Errorf("service: create post: %e", err)
 		return echo.NewHTTPError(404, err.Error())
@@ -40,7 +31,6 @@ func (h *Handler) CreatePost(c echo.Context) error {
 
 func (h *Handler) GetPosts(c echo.Context) error {
 	id := c.Param("id")
-
 	posts, err := h.se.GetPosts(c.Request().Context(), id)
 	if err != nil {
 		logrus.Errorf("service: get posts: %e", err)
@@ -50,16 +40,28 @@ func (h *Handler) GetPosts(c echo.Context) error {
 	return c.JSON(http.StatusOK, posts)
 }
 
-func (h *Handler) GetPost(c echo.Context) error {
-	cookie, err := c.Cookie("user")
+func (h *Handler) GetMyPosts(c echo.Context) error {
+	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
+	claims := userFromJwt.Claims.(jwt.MapClaims)
+	idFromJwt := claims["id"].(string)
+
+	posts, err := h.se.GetPosts(c.Request().Context(), idFromJwt)
 	if err != nil {
-		logrus.Errorf("service: error parse cookie: %e", err)
+		logrus.Errorf("service: get posts: %e", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	return c.JSON(http.StatusOK, posts)
+}
+
+func (h *Handler) GetPost(c echo.Context) error {
+	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
+	claims := userFromJwt.Claims.(jwt.MapClaims)
+	idFromJwt := claims["id"].(string)
+
 	postID := c.Param("id")
 
-	post, err := h.se.GetPost(c.Request().Context(), cookie.Value, postID)
+	post, err := h.se.GetPost(c.Request().Context(), idFromJwt, postID)
 	if err != nil {
 		if err == model.ErrorNoPosts {
 			return echo.NewHTTPError(404, err.Error())
@@ -72,20 +74,11 @@ func (h *Handler) GetPost(c echo.Context) error {
 }
 
 func (h *Handler) GetLastPosts(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		logrus.Errorf("service: error parse cookie: %e", err)
-		return echo.NewHTTPError(405, err.Error())
-	}
-
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
-	lastPosts, err := h.se.GetLast(c.Request().Context(), cookie.Value)
+	lastPosts, err := h.se.GetLast(c.Request().Context(), idFromJwt)
 	if err != nil {
 		if err == model.ErrorNoPosts {
 			return echo.NewHTTPError(404, err.Error())
@@ -98,18 +91,9 @@ func (h *Handler) GetLastPosts(c echo.Context) error {
 }
 
 func (h *Handler) GetAllPosts(c echo.Context) error {
-	cookie, err := c.Cookie("user")
-	if err != nil {
-		logrus.Errorf("service: error parse cookie: %e", err)
-		return echo.NewHTTPError(405, err.Error())
-	}
-
 	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
-	if cookie.Value != idFromJwt {
-		return echo.NewHTTPError(404, err)
-	}
 
 	posts, err := h.se.GetAllPosts(c.Request().Context(),idFromJwt)
 	if err != nil {

@@ -43,7 +43,7 @@ func (h *Handler) Authentication(c echo.Context) error {
 		return echo.NewHTTPError(403, err.Error())
 	}
 
-	cookieToken, cookieUser, err := h.se.GenerateTokensAndSetCookies(user, c.Request().Context())
+	cookieToken, err := h.se.GenerateTokensAndSetCookies(user, c.Request().Context())
 
 	if err != nil {
 		log.Errorf("handler: failed with auth, %e", err)
@@ -51,19 +51,12 @@ func (h *Handler) Authentication(c echo.Context) error {
 	}
 
 	c.SetCookie(cookieToken)
-	c.SetCookie(cookieUser)
 
 	return c.JSON(http.StatusOK, http.NoBody)
 }
 
 // Logout ...
 func (h *Handler) Logout(c echo.Context) error {
-	c.SetCookie(&http.Cookie{
-		Name:   "user",
-		Path:   h.se.Co.CookiePath,
-		Value:  "",
-		MaxAge: -1,
-	})
 
 	c.SetCookie(&http.Cookie{
 		Name:   "token",
