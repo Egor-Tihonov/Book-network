@@ -3,7 +3,6 @@
         "version": "1.0.0",
         "description": "",
         "scripts": {
-            "build": "go build -o app",
             "start": "/cmd/app"
         },
         "repository": {
