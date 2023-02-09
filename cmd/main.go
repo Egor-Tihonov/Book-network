@@ -47,10 +47,12 @@ func main() {
 	}))
 	e.Use(mid.IsLoggedIn)
 
+	//auth handlers
 	e.POST("/login", h.Authentication)
 	e.POST("/sign-up", h.Registration)
 	e.POST("/user/logout", h.Logout)
 
+	//user handlers
 	e.PUT("/user/update", h.UpdateUser)
 	e.DELETE("/user/delete", h.DeleteUser)
 	e.GET("/user/:id", h.GetOtherUser)
@@ -60,6 +62,7 @@ func main() {
 	e.PUT("/user/add-subscription/:id", h.AddSubscription)
 	e.PUT("/user/remove-subscription/:id", h.DeleteSubscription)
 
+	//posts handlers
 	e.GET("/:id/posts", h.GetPosts)
 	e.GET("/user/posts", h.GetMyPosts)
 	e.GET("/user/last-posts", h.GetLastPosts)
