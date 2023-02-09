@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
@@ -18,12 +19,12 @@ func (h *Handler) CreatePost(c echo.Context) error {
 	post := model.Post{}
 	err := json.NewDecoder(c.Request().Body).Decode(&post)
 	if err != nil {
-		logrus.Errorf("service: error parse json: %e", err)
+		logrus.Errorf("error parse json: %w", err)
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	err = h.se.NewPost(c.Request().Context(), idFromJwt, &post)
 	if err != nil {
-		logrus.Errorf("service: create post: %e", err)
+		logrus.Errorf("create post error: %w", err)
 		return echo.NewHTTPError(404, err.Error())
 	}
 	return c.JSON(http.StatusOK, nil)
@@ -33,7 +34,7 @@ func (h *Handler) GetPosts(c echo.Context) error {
 	id := c.Param("id")
 	posts, err := h.se.GetPosts(c.Request().Context(), id)
 	if err != nil {
-		logrus.Errorf("service: get posts: %e", err)
+		logrus.Errorf("get all user posts error: %w", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -47,7 +48,7 @@ func (h *Handler) GetMyPosts(c echo.Context) error {
 
 	posts, err := h.se.GetPosts(c.Request().Context(), idFromJwt)
 	if err != nil {
-		logrus.Errorf("service: get posts: %e", err)
+		logrus.Errorf("get my posts error: %w", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -63,10 +64,10 @@ func (h *Handler) GetPost(c echo.Context) error {
 
 	post, err := h.se.GetPost(c.Request().Context(), idFromJwt, postID)
 	if err != nil {
-		if err == model.ErrorNoPosts {
+		if errors.Is(err, model.ErrorNoPosts) {
 			return echo.NewHTTPError(404, err.Error())
 		}
-		logrus.Errorf("error get post: %e", err)
+		logrus.Errorf("get one post error: %w", err)
 		return echo.NewHTTPError(405, err.Error())
 	}
 
@@ -80,10 +81,10 @@ func (h *Handler) GetLastPosts(c echo.Context) error {
 
 	lastPosts, err := h.se.GetLast(c.Request().Context(), idFromJwt)
 	if err != nil {
-		if err == model.ErrorNoPosts {
+		if errors.Is(err, model.ErrorNoPosts) {
 			return echo.NewHTTPError(404, err.Error())
 		}
-		logrus.Errorf("error get last post: %e", err)
+		logrus.Errorf("get last post error: %w", err)
 		return echo.NewHTTPError(405, err.Error())
 	}
 
@@ -95,8 +96,9 @@ func (h *Handler) GetAllPosts(c echo.Context) error {
 	claims := userFromJwt.Claims.(jwt.MapClaims)
 	idFromJwt := claims["id"].(string)
 
-	posts, err := h.se.GetAllPosts(c.Request().Context(),idFromJwt)
+	posts, err := h.se.GetAllPosts(c.Request().Context(), idFromJwt)
 	if err != nil {
+		logrus.Errorf("get my feed posts error: %w", err)
 		return echo.NewHTTPError(404, err.Error())
 	}
 	return c.JSON(200, posts)

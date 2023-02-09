@@ -98,7 +98,7 @@ func (h *Handler) UpdateUser(c echo.Context) error {
 	newClaims := model.UserUpdate{}
 	err := json.NewDecoder(c.Request().Body).Decode(&newClaims)
 	if err != nil {
-		log.Errorf("failed parse json, %e", err)
+		log.Errorf("failed parse json, %w", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 

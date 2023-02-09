@@ -11,17 +11,19 @@ var IsLoggedIn = middleware.JWTWithConfig(middleware.JWTConfig{
 	SigningKey:              []byte("SUPER-KEY"),
 	TokenLookup:             "cookie:token",
 	ErrorHandlerWithContext: JWTErrorChecker,
+	Skipper: func(c echo.Context) bool {
+		switch c.Request().URL.Path {
+		case "/login":
+			return true
+		case "/user/logout":
+			return true
+		default:
+			return false
+		}
+	},
 })
 
 func JWTErrorChecker(err error, c echo.Context) error {
-	// Redirects to the signIn form.
-	c.SetCookie(&http.Cookie{
-		Name:   "user",
-		Path:   "/",
-		Value:  "",
-		MaxAge: -1,
-	})
-
 	c.SetCookie(&http.Cookie{
 		Name:   "token",
 		Path:   "/",

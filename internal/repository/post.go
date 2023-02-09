@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/Egor-Tihonov/Book-network/internal/model"
@@ -19,7 +20,7 @@ func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, 
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select all posts, %e", err)
+		logrus.Errorf("database error with select all posts, %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -27,7 +28,7 @@ func (p *PostgresDB) GetAll(ctx context.Context, userid string) ([]*model.Post, 
 		po := model.Post{}
 		err = rows.Scan(&po.AuthorName, &po.AuthorSurname, &po.Title, &po.Content, &po.PostId)
 		if err != nil {
-			logrus.Errorf("database error with select all posts, %e", err)
+			logrus.Errorf("database error with select all posts, %w", err)
 			return nil, err
 		}
 		posts = append(posts, &po)
@@ -70,7 +71,7 @@ func (p *PostgresDB) GetForCheckAuthor(ctx context.Context, name, surname string
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return booksid, authorid, nil
 		}
-		logrus.Errorf("error get author from db, %e", err)
+		logrus.Errorf("error get author from db, %w", err)
 		return booksid, authorid, err
 	}
 	return booksid, authorid, nil
@@ -84,7 +85,7 @@ func (p *PostgresDB) GetForCheckPosts(ctx context.Context, userId string) ([]str
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select all posts, %e", err)
+		logrus.Errorf("database error with select all posts, %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -92,7 +93,7 @@ func (p *PostgresDB) GetForCheckPosts(ctx context.Context, userId string) ([]str
 		i := ""
 		err = rows.Scan(&i)
 		if err != nil {
-			logrus.Errorf("database error with select all posts, %e", err)
+			logrus.Errorf("database error with select all posts, %w", err)
 			return nil, err
 		}
 		ids = append(ids, i)
@@ -123,7 +124,7 @@ func (p *PostgresDB) GetLast(ctx context.Context, userid string) ([]*model.LastP
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select all posts, %e", err.Error())
+		logrus.Errorf("database error with select all posts, %w", err.Error())
 		return nil, err
 	}
 	defer rows.Close()
@@ -131,7 +132,7 @@ func (p *PostgresDB) GetLast(ctx context.Context, userid string) ([]*model.LastP
 		lastPost := model.LastPost{}
 		err = rows.Scan(&lastPost.PostId, &lastPost.Title)
 		if err != nil {
-			logrus.Errorf("database error with select all posts, %e", err)
+			logrus.Errorf("database error with select all posts, %w", err)
 			return nil, err
 		}
 		lastPosts = append(lastPosts, &lastPost)
@@ -145,10 +146,10 @@ func (p *PostgresDB) GetAllPosts(ctx context.Context, id string) ([]*model.Post,
 		" inner join posts on books.id=posts.idbook where posts.userid = $1 or posts.userid in (select unnest(subscriptions) from users where id=$1) order by dt_create desc"
 	rows, err := p.Pool.Query(ctx, sql, id)
 	if err != nil {
-		if err.Error() == pgx.ErrNoRows.Error() {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select all posts, %e", err)
+		logrus.Errorf("database error with select all posts, %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -156,7 +157,7 @@ func (p *PostgresDB) GetAllPosts(ctx context.Context, id string) ([]*model.Post,
 		po := model.Post{}
 		err = rows.Scan(&po.AuthorName, &po.AuthorSurname, &po.Title, &po.Content, &po.PostId)
 		if err != nil {
-			logrus.Errorf("database error with select all posts, %e", err)
+			logrus.Errorf("database error with select all posts, %w", err)
 			return nil, err
 		}
 		posts = append(posts, &po)

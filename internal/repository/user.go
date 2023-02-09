@@ -30,7 +30,7 @@ func (p *PostgresDB) Delete(ctx context.Context, id string) error {
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return model.ErrorUserDoesntExist
 		}
-		logrus.Errorf("error with delete user %e", err)
+		logrus.Errorf("error with delete user %w", err)
 		return err
 	}
 	if a.RowsAffected() == 0 {
@@ -63,7 +63,7 @@ func (p *PostgresDB) GetLastUsersIDs(ctx context.Context) ([]*model.LastUsers, e
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select all users id, %e", err)
+		logrus.Errorf("database error with select all users id, %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -71,7 +71,7 @@ func (p *PostgresDB) GetLastUsersIDs(ctx context.Context) ([]*model.LastUsers, e
 		lastUser := model.LastUsers{}
 		err = rows.Scan(&lastUser.Id, &lastUser.Username)
 		if err != nil {
-			logrus.Errorf("database error with select all users id, %e", err)
+			logrus.Errorf("database error with select all users id, %w", err)
 			return nil, err
 		}
 		lastUsers = append(lastUsers, &lastUser)
@@ -87,7 +87,7 @@ func (p *PostgresDB) Update(ctx context.Context, id string, c *model.UserUpdate)
 		return model.ErrorUserDoesntExist
 	}
 	if err != nil {
-		logrus.Errorf("error with update user %e", err)
+		logrus.Errorf("error with update user %w", err)
 		return err
 	}
 	return nil
@@ -118,7 +118,7 @@ func (p *PostgresDB) GetAuthByUsername(ctx context.Context, authString string) (
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		}
-		logrus.Errorf("database error, select by id: %e", err)
+		logrus.Errorf("database error, select by id: %w", err)
 		return nil, err
 	}
 	return &u, nil
@@ -133,7 +133,7 @@ func (p *PostgresDB) GetAuthByEmail(ctx context.Context, authString string) (*mo
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorUserDoesntExist
 		}
-		logrus.Errorf("database error, select by id: %e", err)
+		logrus.Errorf("database error, select by id: %w", err)
 		return nil, err
 	}
 	return &u, nil
@@ -145,7 +145,7 @@ func (p *PostgresDB) AddSubscriprion(ctx context.Context, subid, id string) erro
 		return fmt.Errorf("users doesnt exist, failing add subscription")
 	}
 	if err != nil {
-		logrus.Errorf("error while add subscription, %e", err)
+		logrus.Errorf("error while add subscription, %w", err)
 		return err
 	}
 	return nil
@@ -157,7 +157,7 @@ func (p *PostgresDB) DeleteSubscription(ctx context.Context, subid, id string) e
 		return fmt.Errorf("users doesnt exist, failing remove subscription")
 	}
 	if err != nil {
-		logrus.Errorf("error while remove subscription, %e", err)
+		logrus.Errorf("error while remove subscription, %w", err)
 		return err
 	}
 	return nil
@@ -187,7 +187,7 @@ func (p *PostgresDB) GetSubs(ctx context.Context, id string) ([]*model.User, err
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, model.ErrorNoPosts
 		}
-		logrus.Errorf("database error with select sub users id, %e", err)
+		logrus.Errorf("database error with select sub users id, %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -196,7 +196,7 @@ func (p *PostgresDB) GetSubs(ctx context.Context, id string) ([]*model.User, err
 		user := model.User{}
 		err = rows.Scan(&user.ID, &user.Name, &user.Username, &user.Status, &user.Email, &date)
 		if err != nil {
-			logrus.Errorf("database error with select sub users id, %e", err)
+			logrus.Errorf("database error with select sub users id, %w", err)
 			return nil, err
 		}
 		user.JoinDate = date.Format("2006-01-02")

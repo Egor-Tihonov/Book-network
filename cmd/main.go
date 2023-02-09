@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Egor-Tihonov/Book-network/internal/config"
@@ -21,13 +20,13 @@ func main() {
 	cfg := config.Config{}
 	err := env.Parse(&cfg)
 	if err != nil {
-		logrus.Fatalf("Error parsing env %e", err)
+		logrus.Fatalf("Error parsing env %w", err)
 	}
-	fmt.Println(cfg)
+	logrus.Info(cfg)
 
 	repo, err := repository.New( /*cfg.PostgresDBURL*/ )
 	if err != nil {
-		logrus.Fatalf("Connection was failed, %e", err)
+		logrus.Fatalf("Connection was failed, %w", err)
 	}
 	defer repo.Pool.Close()
 
@@ -39,13 +38,6 @@ func main() {
 	h := handler.New(srv)
 
 	e := echo.New()
-	/*g := e.Group("/user")
-	g.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		Claims:      &model.JWTClaims{},
-		SigningKey:  []byte("SUPER-KEY"), //cfg.JWTKey
-		TokenLookup: "cookie:token",
-		ErrorHandlerWithContext: JWTErrorChecker,
-	}))*/
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
@@ -53,25 +45,27 @@ func main() {
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 	}))
+	e.Use(mid.IsLoggedIn)
+
 	e.POST("/login", h.Authentication)
 	e.POST("/sign-up", h.Registration)
+	e.POST("/user/logout", h.Logout)
 
-	e.POST("/user/logout", h.Logout, mid.IsLoggedIn)
-	e.PUT("/user/update", h.UpdateUser, mid.IsLoggedIn)
-	e.DELETE("/user/delete", h.DeleteUser, mid.IsLoggedIn)
-	e.GET("/user/:id", h.GetOtherUser, mid.IsLoggedIn)
-	e.GET("/user", h.GetUser, mid.IsLoggedIn)
-	e.GET("/user/following", h.MySubscriptions, mid.IsLoggedIn)
-	e.GET("/newusers", h.GetLastUsers, mid.IsLoggedIn)
-	e.PUT("/user/add-subscription/:id", h.AddSubscription, mid.IsLoggedIn)
-	e.PUT("/user/remove-subscription/:id", h.DeleteSubscription, mid.IsLoggedIn)
+	e.PUT("/user/update", h.UpdateUser)
+	e.DELETE("/user/delete", h.DeleteUser)
+	e.GET("/user/:id", h.GetOtherUser)
+	e.GET("/user", h.GetUser)
+	e.GET("/user/following", h.MySubscriptions)
+	e.GET("/newusers", h.GetLastUsers)
+	e.PUT("/user/add-subscription/:id", h.AddSubscription)
+	e.PUT("/user/remove-subscription/:id", h.DeleteSubscription)
 
-	e.GET("/:id/posts", h.GetPosts, mid.IsLoggedIn)
-	e.GET("/user/posts", h.GetMyPosts, mid.IsLoggedIn)
-	e.GET("/user/last-posts", h.GetLastPosts, mid.IsLoggedIn)
-	e.GET("/post/:id", h.GetPost, mid.IsLoggedIn)
-	e.POST("/user/new-post", h.CreatePost, mid.IsLoggedIn)
-	e.GET("/posts", h.GetAllPosts, mid.IsLoggedIn)
+	e.GET("/:id/posts", h.GetPosts)
+	e.GET("/user/posts", h.GetMyPosts)
+	e.GET("/user/last-posts", h.GetLastPosts)
+	e.GET("/post/:id", h.GetPost)
+	e.POST("/user/new-post", h.CreatePost)
+	e.GET("/posts", h.GetAllPosts)
 
 	err = e.Start(":8000")
 	if err != nil {
