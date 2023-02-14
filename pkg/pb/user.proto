@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./pkg/pb";
+
+service UserService{
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){}
+    rpc GetUser(GetUserRequest) returns (GetUserResponse){}
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){}
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse){}
+    rpc GetOtherUser(GetOtherUserRequest) returns (GetOtherUserResponse){}
+    rpc GetNewUsers(GetNewUsersRequest) returns (GetNewUsersResponse){}
+    rpc AddNewSubscription(AddNewSubscriptionRequest) returns (AddNewSubscriptionResponse){}
+    rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse){}
+    rpc GetPost(GetPostRequest) returns (GetPostResponse){}
+    rpc GetLastPosts(GetLastPostsRequest) returns (GetLastPostsResponse){}
+    rpc CreatePost(CreatePostRequest) returns (CreatePostResponse){}
+}
+
+// UpdateUser
+message UpdateUserRequest{
+    string id  = 1;
+    optional ChangePasswrod changePasswrod = 2;
+    optional string status = 4;
+    optional string name = 5;
+    optional string username = 6;
+}
+
+message ChangePasswrod{
+    string passwordOld = 1;
+    string passwordNew = 2;
+}
+
+message UpdateUserResponse{
+    Response response = 1;
+}
+
+// DeleteUser
+message DeleteUserRequest{
+    string id = 1;
+}
+
+message DeleteUserResponse{
+    Response response = 1;
+}
+
+// GetOtherUser
+message GetOtherUserRequest{
+    string id = 1;
+}
+
+message GetOtherUserResponse{
+    User user = 1;
+    repeated Post post = 2;
+    Response response = 3;
+}
+
+// GetNewUsers
+message GetNewUsersRequest{}
+
+message GetNewUsersResponse{
+    repeated User user = 1;
+    Response response = 2;
+}
+
+// AddNewSubscription
+message AddNewSubscriptionRequest{
+    string id = 1;
+    string userid = 2;
+}
+
+message AddNewSubscriptionResponse{
+    Response response = 1;
+}
+
+// DeleteNewSubscription
+message DeleteSubscriptionRequest{
+    string id = 1;
+    string userid = 2;
+}
+
+message DeleteSubscriptionResponse{
+    Response response = 1;
+}
+
+// GetPost
+message GetPostRequest{
+    string id = 1;
+}
+
+message GetPostResponse{
+    Post post = 1;
+    Response response = 2;
+}
+
+// GetLastPosts
+message GetLastPostsRequest{
+    string id = 1;
+}
+
+message GetLastPostsResponse{
+    repeated Post post = 1;
+    Response response = 2;
+}
+
+// CreatePost
+message CreatePostRequest{
+    string id = 1;
+    Post newpost = 2;
+}
+
+message CreatePostResponse{
+    Response response = 1;
+}
+
+// User
+message User{
+    string name = 1;
+    string username = 2;
+    string email = 3;
+    string status = 4;
+    string joinDate = 5;
+}
+
+// Post
+message Post{
+    string authorName = 1;
+    string authorSurname = 2;
+    string title = 3;
+    string content = 4;
+}
+
+// Response
+message Response {
+    int64 status = 1;
+    string error = 2;
+}
+
+
+
+// Registration
+message CreateUserRequest{
+    string Id = 1;
+    string name = 2;
+    string username = 3;
+    string email = 4;
+}
+
+// Response
+message CreateUserResponse{
+    int64 status = 1;
+    string error = 2;
+}
+
+message GetUserRequest{
+    string id = 1;
+}
+
+message GetUserResponse{
+    User user = 1;
+    repeated Post post = 2;
+    repeated User subscriptions = 3;
+    Response response = 4;
+}
