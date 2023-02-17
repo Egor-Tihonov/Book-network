@@ -1,5 +1,5 @@
 // Package repository ...
-package repository
+package db
 
 import (
 	"context"

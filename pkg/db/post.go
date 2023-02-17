@@ -1,4 +1,4 @@
-package repository
+package db
 
 import (
 	"context"
@@ -11,30 +11,30 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (p *DBPostgres) GetAll(ctx context.Context, userid string) ([]*models.Post, error) {
-	var posts []*models.Post
-	sql := "select author.name,author.surname,books.title,posts.content,posts.id from books inner join author on author.id=books.idauthor" +
-		" inner join posts on books.id=posts.idbook where posts.userid=$1 order by dt_create desc"
-	rows, err := p.Pool.Query(ctx, sql, userid)
-	if err != nil {
-		if err.Error() == pgx.ErrNoRows.Error() {
-			return nil, models.ErrorNoPosts
-		}
-		logrus.Errorf("database error with select all posts, %w", err)
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		po := models.Post{}
-		err = rows.Scan(&po.AuthorName, &po.AuthorSurname, &po.Title, &po.Content, &po.PostId)
-		if err != nil {
-			logrus.Errorf("database error with select all posts, %w", err)
-			return nil, err
-		}
-		posts = append(posts, &po)
-	}
-	return posts, err
-}
+// func (p *DBPostgres) GetAll(ctx context.Context, userid string) ([]*pb.Post, error) {
+// 	var posts []*pb.Post
+// 	sql := "select author.name,author.surname,books.title,posts.content,posts.id from books inner join author on author.id=books.idauthor" +
+// 		" inner join posts on books.id=posts.idbook where posts.userid=$1 order by dt_create desc"
+// 	rows, err := p.Pool.Query(ctx, sql, userid)
+// 	if err != nil {
+// 		if err.Error() == pgx.ErrNoRows.Error() {
+// 			return nil, models.ErrorNoPosts
+// 		}
+// 		logrus.Errorf("database error with select all posts, %w", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+// 	for rows.Next() {
+// 		pb := pb.Post{}
+// 		err = rows.Scan(&pb.AuthorName, &pb.AuthorSurname, &pb.Title, &pb.Content, &pb.Id)
+// 		if err != nil {
+// 			logrus.Errorf("database error with select all posts, %w", err)
+// 			return nil, err
+// 		}
+// 		posts = append(posts, &pb)
+// 	}
+// 	return posts, err
+// }
 
 func (p *DBPostgres) CreatePost(ctx context.Context, userid, authorId, bookId string, post *models.Post, date time.Time) error {
 	if authorId == "" {
@@ -154,13 +154,13 @@ func (p *DBPostgres) GetAllPosts(ctx context.Context, id string) ([]*models.Post
 	}
 	defer rows.Close()
 	for rows.Next() {
-		po := models.Post{}
-		err = rows.Scan(&po.AuthorName, &po.AuthorSurname, &po.Title, &po.Content, &po.PostId)
+		pb := models.Post{}
+		err = rows.Scan(&pb.AuthorName, &pb.AuthorSurname, &pb.Title, &pb.Content, &pb.PostId)
 		if err != nil {
 			logrus.Errorf("database error with select all posts, %w", err)
 			return nil, err
 		}
-		posts = append(posts, &po)
+		posts = append(posts, &pb)
 	}
 	return posts, err
 }

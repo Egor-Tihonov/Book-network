@@ -2,17 +2,19 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "./pkg/pb";
+option go_package = "./pkg/pb/user";
 
 service UserService{
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){}
     rpc GetUser(GetUserRequest) returns (GetUserResponse){}
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){}
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse){}
-    rpc GetOtherUser(GetOtherUserRequest) returns (GetOtherUserResponse){}
+
     rpc GetNewUsers(GetNewUsersRequest) returns (GetNewUsersResponse){}
+
     rpc AddNewSubscription(AddNewSubscriptionRequest) returns (AddNewSubscriptionResponse){}
     rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse){}
+    
     rpc GetPost(GetPostRequest) returns (GetPostResponse){}
     rpc GetLastPosts(GetLastPostsRequest) returns (GetLastPostsResponse){}
     rpc CreatePost(CreatePostRequest) returns (CreatePostResponse){}
@@ -21,15 +23,11 @@ service UserService{
 // UpdateUser
 message UpdateUserRequest{
     string id  = 1;
-    optional ChangePasswrod changePasswrod = 2;
     optional string status = 4;
     optional string name = 5;
     optional string username = 6;
-}
-
-message ChangePasswrod{
-    string passwordOld = 1;
-    string passwordNew = 2;
+    optional string newpassword = 7;
+    optional string oldpassword = 8;
 }
 
 message UpdateUserResponse{
@@ -43,17 +41,6 @@ message DeleteUserRequest{
 
 message DeleteUserResponse{
     Response response = 1;
-}
-
-// GetOtherUser
-message GetOtherUserRequest{
-    string id = 1;
-}
-
-message GetOtherUserResponse{
-    User user = 1;
-    repeated Post post = 2;
-    Response response = 3;
 }
 
 // GetNewUsers
@@ -121,14 +108,16 @@ message User{
     string email = 3;
     string status = 4;
     string joinDate = 5;
+    string id = 6;
 }
 
 // Post
 message Post{
-    string authorName = 1;
-    string authorSurname = 2;
-    string title = 3;
-    string content = 4;
+    string id = 1;
+    string authorName = 2;
+    string authorSurname = 3;
+    string title = 4;
+    string content = 5;
 }
 
 // Response
@@ -136,8 +125,6 @@ message Response {
     int64 status = 1;
     string error = 2;
 }
-
-
 
 // Registration
 message CreateUserRequest{

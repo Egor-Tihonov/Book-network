@@ -1,5 +1,5 @@
 // Package repository ...
-package repository
+package db
 
 import (
 	"context"
@@ -22,6 +22,21 @@ func (p *DBPostgres) Create(ctx context.Context, user *models.UserModel) error {
 	return nil
 }
 
+func (p *DBPostgres) GetUser(ctx context.Context, id string) (*models.User, error) {
+	user := models.User{}
+	date := time.Time{}
+	err := p.Pool.QueryRow(ctx, "select username,name,status,email,joinDate from users where id=$1", id).Scan(
+		&user.Username, &user.Name, &user.Status, &user.Email, &date)
+	if err != nil {
+		if err.Error() == pgx.ErrNoRows.Error() {
+			return nil, models.ErrorUserDoesntExist
+		}
+		return nil, err
+	}
+	user.JoinDate = date.Format("2006-01-02")
+	return &user, nil
+}
+
 // Delete : delete user by his ID
 func (p *DBPostgres) Delete(ctx context.Context, id string) error {
 	a, err := p.Pool.Exec(ctx, "delete from users where id=$1", id)
@@ -38,20 +53,20 @@ func (p *DBPostgres) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (p *DBPostgres) GetUserForUpdate(ctx context.Context, id string) (*models.UserUpdate, error) {
-	user := models.UserUpdate{}
-	err := p.Pool.QueryRow(ctx, "select status,name,username,password from users where id = $1", id).Scan(
-		&user.Status, &user.Name, &user.Username, &user.Password)
-	if err != nil {
-		if err.Error() == pgx.ErrNoRows.Error() {
-			return nil, models.ErrorUserDoesntExist
-		} else {
-			return nil, err
-		}
-	}
+// func (p *DBPostgres) GetUserForUpdate(ctx context.Context, id string) (*models.UserUpdate, error) {
+// 	user := models.UserUpdate{}
+// 	err := p.Pool.QueryRow(ctx, "select status,name,username,password from users where id = $1", id).Scan(
+// 		&user.Status, &user.Name, &user.Username, &user.Password)
+// 	if err != nil {
+// 		if err.Error() == pgx.ErrNoRows.Error() {
+// 			return nil, models.ErrorUserDoesntExist
+// 		} else {
+// 			return nil, err
+// 		}
+// 	}
 
-	return &user, err
-}
+// 	return &user, err
+// }
 
 func (p *DBPostgres) GetLastUsersIDs(ctx context.Context) ([]*models.LastUsers, error) {
 	var lastUsers []*models.LastUsers
@@ -80,32 +95,20 @@ func (p *DBPostgres) GetLastUsersIDs(ctx context.Context) ([]*models.LastUsers, 
 
 // Update update user in db
 func (p *DBPostgres) Update(ctx context.Context, id string, c *models.UserUpdate) error {
-	a, err := p.Pool.Exec(ctx, "update users set status=$1, name=$2, username=$3,password=$4 where id=$5",
-		&c.Status, &c.Name, &c.Username, &c.Password, id)
-	if a.RowsAffected() == 0 {
-		return models.ErrorUserDoesntExist
-	}
+	fmt.Println(id)
+	a, err := p.Pool.Exec(ctx, "update users set status=$1, name=$2, username=$3 where id=$4",
+		&c.Status, &c.Name, &c.Username, id)
+
 	if err != nil {
 		logrus.Errorf("error with update user %w", err)
 		return err
 	}
-	return nil
-}
 
-// Get : select one user by his ID
-func (p *DBPostgres) Get(ctx context.Context, id string) (*models.User, error) {
-	user := models.User{}
-	date := time.Time{}
-	err := p.Pool.QueryRow(ctx, "select username,name,status,email,joinDate from users where id=$1", id).Scan(
-		&user.Username, &user.Name, &user.Status, &user.Email, &date)
-	if err != nil {
-		if err.Error() == pgx.ErrNoRows.Error() {
-			return nil, models.ErrorUserDoesntExist
-		}
-		return nil, err
+	if a.RowsAffected() == 0 {
+		logrus.Errorf("error with update user %w", err)
+		return models.ErrorUserDoesntExist
 	}
-	user.JoinDate = date.Format("2006-01-02")
-	return &user, nil
+	return nil
 }
 
 func (p *DBPostgres) AddSubscriprion(ctx context.Context, subid, id string) error {
@@ -147,7 +150,7 @@ func (p *DBPostgres) CheckSubs(ctx context.Context, id, userid string) (bool, er
 	return true, nil
 }
 
-func (p *DBPostgres) GetSubs(ctx context.Context, id string) ([]*models.User, error) {
+func (p *DBPostgres) GetMySubs(ctx context.Context, id string) ([]*models.User, error) {
 	var subusers []*models.User
 	date := time.Time{}
 	rows, err := p.Pool.Query(ctx, "select id,name,username,status,email,joindate from users where id IN "+

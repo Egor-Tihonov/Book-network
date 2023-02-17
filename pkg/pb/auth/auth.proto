@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "./pkg/pb/auth";
+
+service AuthService{
+    rpc DeleteUser(DeleteUserRequest) returns (Response){}
+    rpc UpdatePassword(UpdatePasswordRequest) returns (Response){}
+}
+
+message DeleteUserRequest{
+    string id = 1;
+}
+
+message UpdatePasswordRequest{
+    string id = 1;
+    string Oldpassword = 2;
+    string Newpassword = 3;
+}
+
+message Response{
+    int64 status = 1;
+    string error = 2;
+}
