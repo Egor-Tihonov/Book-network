@@ -9,6 +9,9 @@ service UserService{
     rpc GetUser(GetUserRequest) returns (GetUserResponse){}
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){}
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse){}
+    rpc GetMyFeed (GetMyFeedRequest) returns (GetMyFeedResponse){}
+    rpc CheckMySubs(CheckMySubsRequest) returns (CheckMySubsResponse){}
+    rpc GetMySubscriptions(GetMySubscriptionsRequest) returns (GetMySubscriptionsResponse){}
 
     rpc GetNewUsers(GetNewUsersRequest) returns (GetNewUsersResponse){}
 
@@ -18,6 +21,59 @@ service UserService{
     rpc GetPost(GetPostRequest) returns (GetPostResponse){}
     rpc GetLastPosts(GetLastPostsRequest) returns (GetLastPostsResponse){}
     rpc CreatePost(CreatePostRequest) returns (CreatePostResponse){}
+    rpc DeletePost(DeletePostRequest) returns (DeletePostResponse){}
+}
+
+// Get My Subs
+message GetMySubscriptionsRequest{
+    string id = 1;
+}
+
+message GetMySubscriptionsResponse{
+    repeated User user = 1;
+    Response response = 2;
+}
+
+// CheckSubs
+message CheckMySubsRequest{
+    string myid = 1;
+    string userid = 2;
+}
+
+message CheckMySubsResponse{
+    string boolcheck = 1;
+    Response response = 2;
+}
+
+// DeletePost
+message DeletePostRequest{
+    string userid = 1;
+    string postid = 2;
+}
+
+message DeletePostResponse{
+    Response response = 1;
+}
+
+// GetMyFeed get my posts and posts of my subs
+message GetMyFeedRequest{
+    string id = 1;
+}
+
+message GetMyFeedResponse{
+    repeated Feed feed = 1;
+    Response response = 2;
+}
+
+message Feed{
+    string username = 1;
+    string authorName = 2;
+    string authorSurname = 3;
+    string title = 4;
+    string content = 5;
+    string date = 6;
+    string status = 7;
+    string userid = 8;
 }
 
 // UpdateUser
@@ -44,7 +100,9 @@ message DeleteUserResponse{
 }
 
 // GetNewUsers
-message GetNewUsersRequest{}
+message GetNewUsersRequest{
+    string id = 1;
+}
 
 message GetNewUsersResponse{
     repeated User user = 1;
@@ -73,7 +131,7 @@ message DeleteSubscriptionResponse{
 
 // GetPost
 message GetPostRequest{
-    string id = 1;
+    string postid = 1;
 }
 
 message GetPostResponse{
@@ -87,7 +145,7 @@ message GetLastPostsRequest{
 }
 
 message GetLastPostsResponse{
-    repeated Post post = 1;
+    repeated LastPost posts = 1;
     Response response = 2;
 }
 
@@ -113,11 +171,15 @@ message User{
 
 // Post
 message Post{
+    string authorName = 1;
+    string authorSurname = 2;
+    string title = 3;
+    string content = 4;
+}
+
+message LastPost{
     string id = 1;
-    string authorName = 2;
-    string authorSurname = 3;
-    string title = 4;
-    string content = 5;
+    string title = 2;
 }
 
 // Response

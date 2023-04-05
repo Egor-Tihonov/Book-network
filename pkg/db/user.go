@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Egor-Tihonov/Book-network/pkg/models"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
 )
@@ -68,11 +69,11 @@ func (p *DBPostgres) Delete(ctx context.Context, id string) error {
 // 	return &user, err
 // }
 
-func (p *DBPostgres) GetLastUsersIDs(ctx context.Context) ([]*models.LastUsers, error) {
+func (p *DBPostgres) GetLastUsersIDs(ctx context.Context, id string) ([]*models.LastUsers, error) {
 	var lastUsers []*models.LastUsers
 	sql := "select id,username" +
-		" from users where EXTRACT(YEAR FROM joindate) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM joindate) = EXTRACT (WEEK FROM NOW()) order by joindate desc "
-	rows, err := p.Pool.Query(ctx, sql)
+		" from users where EXTRACT(YEAR FROM joindate) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM joindate) = EXTRACT (WEEK FROM NOW()) and id <> $1 order by joindate desc "
+	rows, err := p.Pool.Query(ctx, sql, id)
 	if err != nil {
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, models.ErrorNoPosts
@@ -94,10 +95,25 @@ func (p *DBPostgres) GetLastUsersIDs(ctx context.Context) ([]*models.LastUsers, 
 }
 
 // Update update user in db
-func (p *DBPostgres) Update(ctx context.Context, id string, c *models.UserUpdate) error {
-	fmt.Println(id)
-	a, err := p.Pool.Exec(ctx, "update users set status=$1, name=$2, username=$3 where id=$4",
-		&c.Status, &c.Name, &c.Username, id)
+func (p *DBPostgres) Update(ctx context.Context, id string, c *models.UserUpdate, checkstring string) error {
+	var a pgconn.CommandTag
+	sql := ""
+	var err error
+	switch checkstring {
+	case "status":
+		sql = "update users set status=$1 where id=$2"
+		a, err = p.Pool.Exec(ctx, sql,
+			&c.Status, id)
+	case "username":
+		sql = "update users set username=$1 where id=$2"
+		a, err = p.Pool.Exec(ctx, sql,
+			&c.Username, id)
+
+	case "name":
+		sql = "update users set name=$1 where id=$2"
+		a, err = p.Pool.Exec(ctx, sql,
+			&c.Name, id)
+	}
 
 	if err != nil {
 		logrus.Errorf("error with update user %w", err)
@@ -135,19 +151,19 @@ func (p *DBPostgres) DeleteSubscription(ctx context.Context, subid, id string) e
 	return nil
 }
 
-func (p *DBPostgres) CheckSubs(ctx context.Context, id, userid string) (bool, error) {
+func (p *DBPostgres) CheckSubs(ctx context.Context, id, userid string) (string, error) {
 	var position int
 	err := p.Pool.QueryRow(ctx, "select array_position(subscriptions, $1)::INTEGER from users where id=$2", id, userid).Scan(
 		&position)
 	if err != nil {
 		if position == 0 {
-			return false, nil
+			return "false", nil
 		}
 
-		return false, err
+		return "true", err
 	}
 
-	return true, nil
+	return "true", nil
 }
 
 func (p *DBPostgres) GetMySubs(ctx context.Context, id string) ([]*models.User, error) {
@@ -176,4 +192,28 @@ func (p *DBPostgres) GetMySubs(ctx context.Context, id string) ([]*models.User, 
 	}
 	return subusers, err
 
+}
+
+func (p *DBPostgres) Search(ctx context.Context, query string) ([]*models.User, error) {
+	var users []*models.User
+	rows, err := p.Pool.Query(ctx, "select id,name,username from users where username like '$1%'", query) /*+ count of posts*/
+	if err != nil {
+		logrus.Errorf("database error with search users, %w", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		user := models.User{}
+		err = rows.Scan(&user.ID, &user.Name, &user.Username)
+		if err != nil {
+			logrus.Errorf("database error with select sub users id, %w", err)
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
 }

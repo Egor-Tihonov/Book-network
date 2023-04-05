@@ -26,12 +26,16 @@ type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	GetMyFeed(ctx context.Context, in *GetMyFeedRequest, opts ...grpc.CallOption) (*GetMyFeedResponse, error)
+	CheckMySubs(ctx context.Context, in *CheckMySubsRequest, opts ...grpc.CallOption) (*CheckMySubsResponse, error)
+	GetMySubscriptions(ctx context.Context, in *GetMySubscriptionsRequest, opts ...grpc.CallOption) (*GetMySubscriptionsResponse, error)
 	GetNewUsers(ctx context.Context, in *GetNewUsersRequest, opts ...grpc.CallOption) (*GetNewUsersResponse, error)
 	AddNewSubscription(ctx context.Context, in *AddNewSubscriptionRequest, opts ...grpc.CallOption) (*AddNewSubscriptionResponse, error)
 	DeleteSubscription(ctx context.Context, in *DeleteSubscriptionRequest, opts ...grpc.CallOption) (*DeleteSubscriptionResponse, error)
 	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*GetPostResponse, error)
 	GetLastPosts(ctx context.Context, in *GetLastPostsRequest, opts ...grpc.CallOption) (*GetLastPostsResponse, error)
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*CreatePostResponse, error)
+	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error)
 }
 
 type userServiceClient struct {
@@ -72,6 +76,33 @@ func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserReques
 func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
 	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/DeleteUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetMyFeed(ctx context.Context, in *GetMyFeedRequest, opts ...grpc.CallOption) (*GetMyFeedResponse, error) {
+	out := new(GetMyFeedResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetMyFeed", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) CheckMySubs(ctx context.Context, in *CheckMySubsRequest, opts ...grpc.CallOption) (*CheckMySubsResponse, error) {
+	out := new(CheckMySubsResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/CheckMySubs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetMySubscriptions(ctx context.Context, in *GetMySubscriptionsRequest, opts ...grpc.CallOption) (*GetMySubscriptionsResponse, error) {
+	out := new(GetMySubscriptionsResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetMySubscriptions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +163,15 @@ func (c *userServiceClient) CreatePost(ctx context.Context, in *CreatePostReques
 	return out, nil
 }
 
+func (c *userServiceClient) DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error) {
+	out := new(DeletePostResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/DeletePost", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -140,12 +180,16 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	GetMyFeed(context.Context, *GetMyFeedRequest) (*GetMyFeedResponse, error)
+	CheckMySubs(context.Context, *CheckMySubsRequest) (*CheckMySubsResponse, error)
+	GetMySubscriptions(context.Context, *GetMySubscriptionsRequest) (*GetMySubscriptionsResponse, error)
 	GetNewUsers(context.Context, *GetNewUsersRequest) (*GetNewUsersResponse, error)
 	AddNewSubscription(context.Context, *AddNewSubscriptionRequest) (*AddNewSubscriptionResponse, error)
 	DeleteSubscription(context.Context, *DeleteSubscriptionRequest) (*DeleteSubscriptionResponse, error)
 	GetPost(context.Context, *GetPostRequest) (*GetPostResponse, error)
 	GetLastPosts(context.Context, *GetLastPostsRequest) (*GetLastPostsResponse, error)
 	CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error)
+	DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -165,6 +209,15 @@ func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserReq
 func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
+func (UnimplementedUserServiceServer) GetMyFeed(context.Context, *GetMyFeedRequest) (*GetMyFeedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyFeed not implemented")
+}
+func (UnimplementedUserServiceServer) CheckMySubs(context.Context, *CheckMySubsRequest) (*CheckMySubsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckMySubs not implemented")
+}
+func (UnimplementedUserServiceServer) GetMySubscriptions(context.Context, *GetMySubscriptionsRequest) (*GetMySubscriptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMySubscriptions not implemented")
+}
 func (UnimplementedUserServiceServer) GetNewUsers(context.Context, *GetNewUsersRequest) (*GetNewUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNewUsers not implemented")
 }
@@ -182,6 +235,9 @@ func (UnimplementedUserServiceServer) GetLastPosts(context.Context, *GetLastPost
 }
 func (UnimplementedUserServiceServer) CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePost not implemented")
+}
+func (UnimplementedUserServiceServer) DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePost not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -264,6 +320,60 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetMyFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyFeedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetMyFeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetMyFeed",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetMyFeed(ctx, req.(*GetMyFeedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_CheckMySubs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckMySubsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CheckMySubs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/CheckMySubs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CheckMySubs(ctx, req.(*CheckMySubsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetMySubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMySubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetMySubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetMySubscriptions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetMySubscriptions(ctx, req.(*GetMySubscriptionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -376,6 +486,24 @@ func _UserService_CreatePost_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_DeletePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeletePost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/DeletePost",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeletePost(ctx, req.(*DeletePostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -400,6 +528,18 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_DeleteUser_Handler,
 		},
 		{
+			MethodName: "GetMyFeed",
+			Handler:    _UserService_GetMyFeed_Handler,
+		},
+		{
+			MethodName: "CheckMySubs",
+			Handler:    _UserService_CheckMySubs_Handler,
+		},
+		{
+			MethodName: "GetMySubscriptions",
+			Handler:    _UserService_GetMySubscriptions_Handler,
+		},
+		{
 			MethodName: "GetNewUsers",
 			Handler:    _UserService_GetNewUsers_Handler,
 		},
@@ -422,6 +562,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePost",
 			Handler:    _UserService_CreatePost_Handler,
+		},
+		{
+			MethodName: "DeletePost",
+			Handler:    _UserService_DeletePost_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

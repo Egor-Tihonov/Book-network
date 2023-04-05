@@ -1,82 +1,61 @@
 package services
 
-/*
-func (s *Service) CreatePost(ctx context.Context, id string) error {
-	return s.rps.CreatePost(ctx, id)
-}
+import (
+	"context"
+	"errors"
+	"time"
 
-/*
-func (s *Service) GetPosts(c echo.Context) error {
-	id := c.Param("id")
-	posts, err := s.se.GetPosts(c.Request().Context(), id)
+	"github.com/Egor-Tihonov/Book-network/pkg/models"
+	"github.com/sirupsen/logrus"
+)
+
+func (s *Service) CreatePost(ctx context.Context, post *models.Post, id string) error {
+	bookid, err := s.Check(ctx, post)
 	if err != nil {
-		logrus.Errorf("get all user posts error: %w", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		logrus.Errorf("user service: error create post, %w", err.Error())
 	}
 
-	return c.JSON(http.StatusOK, posts)
-}
-
-func (s *Service) GetMyPosts(c echo.Context) error {
-	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
-	claims := userFromJwt.Claims.(jwt.MapClaims)
-	idFromJwt := claims["id"].(string)
-
-	posts, err := s.se.GetPosts(c.Request().Context(), idFromJwt)
+	bookids, err := s.rps.GetForCheckPosts(ctx, id)
 	if err != nil {
-		logrus.Errorf("get my posts error: %w", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return c.JSON(http.StatusOK, posts)
-}
-
-func (s *Service) GetPost(c echo.Context) error {
-	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
-	claims := userFromJwt.Claims.(jwt.MapClaims)
-	idFromJwt := claims["id"].(string)
-
-	postID := c.Param("id")
-
-	post, err := s.se.GetPost(c.Request().Context(), idFromJwt, postID)
-	if err != nil {
-		if errors.Is(err, models.ErrorNoPosts) {
-			return echo.NewHTTPError(404, err.Error())
+	for _, id := range bookids {
+		if id == bookid {
+			ErrPostAlreadyExist := errors.New("отзыв на эту книгу уже сотавлен")
+			return ErrPostAlreadyExist
 		}
-		logrus.Errorf("get one post error: %w", err)
-		return echo.NewHTTPError(405, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, post)
+	createDate := time.Now()
+	return s.rps.CreatePost(ctx, id, bookid, post, createDate)
 }
 
-func (s *Service) GetLastPosts(c echo.Context) error {
-	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
-	claims := userFromJwt.Claims.(jwt.MapClaims)
-	idFromJwt := claims["id"].(string)
+func (s *Service) GetPost(ctx context.Context, postid string) (*models.Post, error) {
+	return s.rps.GetPost(ctx,postid)
+}
 
-	lastPosts, err := s.se.GetLast(c.Request().Context(), idFromJwt)
+func (s *Service) GetLastPosts(ctx context.Context, id string) ([]*models.LastPost, error) {
+	return s.rps.GetLast(ctx, id)
+}
+
+func (s *Service) Check(ctx context.Context, post *models.Post) (string, error) {
+	res, err := s.BookClient.GetBook(&models.Book{
+		Author: models.Author{
+			Name:    post.AuthorName,
+			Surname: post.AuthorSurname,
+		},
+		Title: post.Title,
+	})
+	logrus.Errorf("%s", err)
+
 	if err != nil {
-		if errors.Is(err, models.ErrorNoPosts) {
-			return echo.NewHTTPError(404, err.Error())
-		}
-		logrus.Errorf("get last post error: %w", err)
-		return echo.NewHTTPError(405, err.Error())
+		return "", err
 	}
 
-	return c.JSON(200, lascontext
+	return res.Id, nil
 }
 
-func (s *Service) GetAllPosts(c echo.Context) error {
-	userFromJwt := c.Get("user").(*jwt.Token) //why c.Get("user") to get auth header
-	claims := userFromJwt.Claims.(jwt.MapClaims)
-	idFromJwt := claims["id"].(string)
-
-	posts, err := s.se.GetAllPosts(c.Request().Context(), idFromJwt)
-	if err != nil {
-		logrus.Errorf("get my feed posts error: %w", err)
-		return echo.NewHTTPError(404, err.Error())
-	}
-	return c.JSON(200, posts)
+func (s *Service) DeletePost(ctx context.Context, postid, userid string) error {
+	return s.rps.DeletePost(ctx, postid, userid)
 }
-*/
