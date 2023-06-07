@@ -35,10 +35,6 @@ func (s *Service) GetPost(ctx context.Context, postid string) (*models.Post, err
 	return s.rps.GetPost(ctx,postid)
 }
 
-func (s *Service) GetLastPosts(ctx context.Context, id string) ([]*models.LastPost, error) {
-	return s.rps.GetLast(ctx, id)
-}
-
 func (s *Service) Check(ctx context.Context, post *models.Post) (string, error) {
 	res, err := s.BookClient.GetBook(&models.Book{
 		Author: models.Author{

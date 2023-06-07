@@ -196,7 +196,7 @@ func (p *DBPostgres) GetMySubs(ctx context.Context, id string) ([]*models.User, 
 
 func (p *DBPostgres) Search(ctx context.Context, query string) ([]*models.User, error) {
 	var users []*models.User
-	rows, err := p.Pool.Query(ctx, "select id,name,username from users where username like '$1%'", query) /*+ count of posts*/
+	rows, err := p.Pool.Query(ctx, "select id,name,username from users where username like $1", query+"%") /*+ count of posts*/
 	if err != nil {
 		logrus.Errorf("database error with search users, %w", err)
 		return nil, err

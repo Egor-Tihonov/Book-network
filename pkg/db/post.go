@@ -97,31 +97,6 @@ func (p *DBPostgres) GetPost(ctx context.Context, postid string) (*models.Post, 
 	return &post, err
 }
 
-func (p *DBPostgres) GetLast(ctx context.Context, userid string) ([]*models.LastPost, error) {
-	var lastPosts []*models.LastPost
-	sql := "select posts.id,posts.book_title from posts" +
-		" where posts.userid=$1 and EXTRACT(YEAR FROM dt_create) = EXTRACT(YEAR FROM NOW()) AND EXTRACT(WEEK FROM dt_create) = EXTRACT (WEEK FROM NOW()) order by dt_create desc "
-	rows, err := p.Pool.Query(ctx, sql, userid)
-	if err != nil {
-		if err.Error() == pgx.ErrNoRows.Error() {
-			return nil, models.ErrorNoPosts
-		}
-		logrus.Errorf("user service error: database error with select all posts, %w", err.Error())
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		lastPost := models.LastPost{}
-		err = rows.Scan(&lastPost.PostId, &lastPost.Title)
-		if err != nil {
-			logrus.Errorf("user service error: database error with select all posts, %w", err)
-			return nil, err
-		}
-		lastPosts = append(lastPosts, &lastPost)
-	}
-	return lastPosts, err
-}
-
 func (p *DBPostgres) GetPosts(ctx context.Context, id string) ([]*models.Feed, error) {
 	var posts []*models.Feed
 

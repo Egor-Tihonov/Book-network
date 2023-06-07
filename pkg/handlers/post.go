@@ -84,35 +84,6 @@ func (h *Handler) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.GetP
 	}, nil
 }
 
-func (h *Handler) GetLastPosts(ctx context.Context, req *pb.GetLastPostsRequest) (*pb.GetLastPostsResponse, error) {
-	posts, err := h.se.GetLastPosts(ctx, req.Id)
-
-	var postsList []*pb.LastPost
-
-	for _, post := range posts {
-		newpost := pb.LastPost{}
-		newpost.Id = post.PostId
-		newpost.Title = post.Title
-		postsList = append(postsList, &newpost)
-	}
-
-	if err != nil {
-		return &pb.GetLastPostsResponse{
-			Response: &pb.Response{
-				Status: http.StatusBadGateway,
-				Error:  err.Error(),
-			},
-		}, err
-	}
-
-	return &pb.GetLastPostsResponse{
-		Posts: postsList,
-		Response: &pb.Response{
-			Status: http.StatusOK,
-		},
-	}, nil
-}
-
 func (h *Handler) validate(post *models.Post) bool {
 	if post.AuthorName == "" {
 		return false

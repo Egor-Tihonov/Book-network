@@ -19,9 +19,19 @@ service UserService{
     rpc DeleteSubscription(DeleteSubscriptionRequest) returns (DeleteSubscriptionResponse){}
     
     rpc GetPost(GetPostRequest) returns (GetPostResponse){}
-    rpc GetLastPosts(GetLastPostsRequest) returns (GetLastPostsResponse){}
     rpc CreatePost(CreatePostRequest) returns (CreatePostResponse){}
     rpc DeletePost(DeletePostRequest) returns (DeletePostResponse){}
+    
+    rpc SearchUser(SearchUserRequest) returns (SearchUserResponse){}
+}
+
+// Search User
+message SearchUserRequest{
+    string queary = 1;
+}
+
+message SearchUserResponse{
+    repeated User user = 1;
 }
 
 // Get My Subs
@@ -139,16 +149,6 @@ message GetPostResponse{
     Response response = 2;
 }
 
-// GetLastPosts
-message GetLastPostsRequest{
-    string id = 1;
-}
-
-message GetLastPostsResponse{
-    repeated LastPost posts = 1;
-    Response response = 2;
-}
-
 // CreatePost
 message CreatePostRequest{
     string id = 1;
@@ -175,11 +175,6 @@ message Post{
     string authorSurname = 2;
     string title = 3;
     string content = 4;
-}
-
-message LastPost{
-    string id = 1;
-    string title = 2;
 }
 
 // Response

@@ -16,23 +16,18 @@ func (s *Service) CreateUser(ctx context.Context, user *models.UserModel) error 
 }
 
 // GetUser: get user logic and get user from db by id
-func (s *Service) GetUser(ctx context.Context, id string) (*models.User, []*models.Post, []*models.User, error) {
+func (s *Service) GetUser(ctx context.Context, id string) (*models.User, []*models.Post, error) {
 	user, err := s.rps.GetUser(ctx, id)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	posts, err := s.rps.GetMyPosts(ctx, id)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	subs, err := s.rps.GetMySubs(ctx, id)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	return user, posts, subs, nil
+	return user, posts, nil
 }
 
 // DeleteUser: go to repo and add delete user from db

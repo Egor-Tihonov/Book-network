@@ -57,7 +57,7 @@ func (h *Handler) GetNewUsers(ctx context.Context, req *pb.GetNewUsersRequest) (
 }
 
 func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	user, posts, subs, err := h.se.GetUser(ctx, req.Id)
+	user, posts, err := h.se.GetUser(ctx, req.Id)
 	if err != nil {
 		return &pb.GetUserResponse{
 			Response: &pb.Response{
@@ -65,18 +65,6 @@ func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 				Error:  err.Error(),
 			},
 		}, err
-	}
-
-	var subList []*pb.User
-
-	for _, sub := range subs {
-		subUser := new(pb.User)
-		subUser.Name = sub.Name
-		subUser.Username = sub.Username
-		subUser.JoinDate = sub.JoinDate
-		subUser.Status = sub.Status
-		subUser.Email = sub.Email
-		subList = append(subList, subUser)
 	}
 
 	var postList []*pb.Post
@@ -99,7 +87,6 @@ func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 			JoinDate: user.JoinDate,
 			Email:    user.Email,
 		},
-		Subscriptions: subList,
 	}, nil
 }
 
@@ -296,5 +283,28 @@ func (h *Handler) GetMySubscriptions(ctx context.Context, req *pb.GetMySubscript
 		Response: &pb.Response{
 			Status: http.StatusOK,
 		},
+	}, nil
+}
+
+func (h *Handler) SearchUser(ctx context.Context, req *pb.SearchUserRequest) (*pb.SearchUserResponse, error) {
+	users, err := h.se.SearchUser(ctx, req.Queary)
+	if err != nil {
+		return &pb.SearchUserResponse{
+			User: nil,
+		}, err
+	}
+
+	var pbusers []*pb.User
+
+	for _, user := range users {
+		pbuser := pb.User{}
+		pbuser.Id = user.ID
+		pbuser.Username = user.Username
+		pbuser.Name = user.Name
+		pbusers = append(pbusers, &pbuser)
+	}
+
+	return &pb.SearchUserResponse{
+		User: pbusers,
 	}, nil
 }
