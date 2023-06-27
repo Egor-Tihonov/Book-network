@@ -9,9 +9,11 @@ service UserService{
     rpc GetUser(GetUserRequest) returns (GetUserResponse){}
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){}
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse){}
+    rpc GetPostsForBook(GetPostsForBookRequest) returns (GetPostsForBookResponse){}
     rpc GetMyFeed (GetMyFeedRequest) returns (GetMyFeedResponse){}
     rpc CheckMySubs(CheckMySubsRequest) returns (CheckMySubsResponse){}
     rpc GetMySubscriptions(GetMySubscriptionsRequest) returns (GetMySubscriptionsResponse){}
+    rpc GetAllReviews(GetAllReviewsRequest) returns (GetAllReviewsResponse){}
 
     rpc GetNewUsers(GetNewUsersRequest) returns (GetNewUsersResponse){}
 
@@ -23,6 +25,23 @@ service UserService{
     rpc DeletePost(DeletePostRequest) returns (DeletePostResponse){}
     
     rpc SearchUser(SearchUserRequest) returns (SearchUserResponse){}
+}
+
+message GetAllReviewsRequest{
+}
+
+message GetAllReviewsResponse{
+    repeated Feed feed = 1;
+    Response response = 2;
+}
+
+message GetPostsForBookRequest{
+    string id = 1;
+}
+
+message GetPostsForBookResponse{
+    repeated Feed feed = 1;
+    Response response = 2;
 }
 
 // Search User

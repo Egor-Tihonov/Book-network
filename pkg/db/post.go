@@ -135,3 +135,73 @@ func (p *DBPostgres) GetPosts(ctx context.Context, id string) ([]*models.Feed, e
 	}
 	return posts, err
 }
+
+func (p *DBPostgres) GetPostsForBook(ctx context.Context, id string) ([]*models.Feed, error) {
+	var posts []*models.Feed
+
+	sql := "select users.id, users.username,users.status, posts.dt_create,posts.content,posts.book_title,posts.author_name,posts.author_surname " +
+		"from users inner join posts on users.id = posts.userid where idbook = $1 order by dt_create desc"
+	rows, err := p.Pool.Query(ctx, sql, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, models.ErrorNoPosts
+		}
+		logrus.Errorf("database error with select all posts, %e", err.Error())
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		pb := models.Feed{}
+		date := time.Time{}
+		err = rows.Scan(&pb.UserId, &pb.Username, &pb.Status, &date, &pb.Content, &pb.Title, &pb.AuthorName, &pb.AuthorSurname)
+		if err != nil {
+			logrus.Errorf("database error with select all posts, %w", err)
+			return nil, err
+		}
+
+		diff := time.Now().Sub(date)
+		out := time.Time{}.Add(diff)
+
+		pb.CreateDate = out.Format("15:04:05")
+
+		posts = append(posts, &pb)
+	}
+	return posts, err
+}
+
+func (p *DBPostgres) GetAllReviewsFromDB(ctx context.Context) ([]*models.Feed, error) {
+	var posts []*models.Feed
+
+	sql := "select users.id, users.username,users.status, posts.dt_create,posts.content,posts.book_title,posts.author_name,posts.author_surname " +
+		"from users inner join posts on users.id = posts.userid order by dt_create desc"
+	rows, err := p.Pool.Query(ctx, sql)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, models.ErrorNoPosts
+		}
+		logrus.Errorf("database error with select all posts, %e", err.Error())
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		pb := models.Feed{}
+		date := time.Time{}
+		err = rows.Scan(&pb.UserId, &pb.Username, &pb.Status, &date, &pb.Content, &pb.Title, &pb.AuthorName, &pb.AuthorSurname)
+		if err != nil {
+			logrus.Errorf("database error with select all posts, %w", err)
+			return nil, err
+		}
+
+		diff := time.Now().Sub(date)
+		out := time.Time{}.Add(diff)
+
+		pb.CreateDate = out.Format("15:04:05")
+
+		posts = append(posts, &pb)
+	}
+	return posts, err
+}

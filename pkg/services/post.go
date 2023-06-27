@@ -32,7 +32,7 @@ func (s *Service) CreatePost(ctx context.Context, post *models.Post, id string) 
 }
 
 func (s *Service) GetPost(ctx context.Context, postid string) (*models.Post, error) {
-	return s.rps.GetPost(ctx,postid)
+	return s.rps.GetPost(ctx, postid)
 }
 
 func (s *Service) Check(ctx context.Context, post *models.Post) (string, error) {
@@ -52,6 +52,14 @@ func (s *Service) Check(ctx context.Context, post *models.Post) (string, error) 
 	return res.Id, nil
 }
 
+func (s *Service) GetPosts(ctx context.Context, id string) ([]*models.Feed, error) {
+	return s.rps.GetPostsForBook(ctx, id)
+}
+
 func (s *Service) DeletePost(ctx context.Context, postid, userid string) error {
 	return s.rps.DeletePost(ctx, postid, userid)
+}
+
+func (s *Service) GetReviewsByAllUsers(ctx context.Context) ([]*models.Feed, error) {
+	return s.rps.GetAllReviewsFromDB(ctx)
 }

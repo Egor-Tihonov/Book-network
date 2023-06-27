@@ -9,6 +9,40 @@ import (
 	pb "github.com/Egor-Tihonov/Book-network/pkg/pb/user"
 )
 
+func (h *Handler) GetAllReviews(ctx context.Context, req *pb.GetAllReviewsRequest) (*pb.GetAllReviewsResponse, error) {
+	posts, err := h.se.GetReviewsByAllUsers(ctx)
+	if err != nil {
+		return &pb.GetAllReviewsResponse{
+			Response: &pb.Response{
+				Status: http.StatusOK,
+				Error:  err.Error(),
+			},
+		}, err
+	}
+
+	var feed []*pb.Feed
+
+	for _, post := range posts {
+		feed_one := pb.Feed{}
+		feed_one.Username = post.Username
+		feed_one.Status = post.Status
+		feed_one.Date = post.CreateDate
+		feed_one.AuthorName = post.AuthorName
+		feed_one.AuthorSurname = post.AuthorSurname
+		feed_one.Title = post.Title
+		feed_one.Content = post.Content
+		feed_one.Userid = post.UserId
+		feed = append(feed, &feed_one)
+	}
+
+	return &pb.GetAllReviewsResponse{
+		Feed: feed,
+		Response: &pb.Response{
+			Status: http.StatusOK,
+		},
+	}, nil
+}
+
 func (h *Handler) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
 	err := h.se.DeletePost(ctx, req.Postid, req.Userid)
 	if err != nil {
@@ -80,6 +114,40 @@ func (h *Handler) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.GetP
 			AuthorSurname: post.AuthorSurname,
 			Title:         post.Title,
 			Content:       post.Content,
+		},
+	}, nil
+}
+
+func (h *Handler) GetPostsForBook(ctx context.Context, req *pb.GetPostsForBookRequest) (*pb.GetPostsForBookResponse, error) {
+	posts, err := h.se.GetPosts(ctx, req.Id)
+	if err != nil {
+		return &pb.GetPostsForBookResponse{
+			Response: &pb.Response{
+				Status: http.StatusOK,
+				Error:  err.Error(),
+			},
+		}, err
+	}
+
+	var feed []*pb.Feed
+
+	for _, post := range posts {
+		feed_one := pb.Feed{}
+		feed_one.Username = post.Username
+		feed_one.Status = post.Status
+		feed_one.Date = post.CreateDate
+		feed_one.AuthorName = post.AuthorName
+		feed_one.AuthorSurname = post.AuthorSurname
+		feed_one.Title = post.Title
+		feed_one.Content = post.Content
+		feed_one.Userid = post.UserId
+		feed = append(feed, &feed_one)
+	}
+
+	return &pb.GetPostsForBookResponse{
+		Feed: feed,
+		Response: &pb.Response{
+			Status: http.StatusOK,
 		},
 	}, nil
 }

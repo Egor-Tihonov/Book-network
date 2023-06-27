@@ -26,14 +26,15 @@ type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	GetPostsForBook(ctx context.Context, in *GetPostsForBookRequest, opts ...grpc.CallOption) (*GetPostsForBookResponse, error)
 	GetMyFeed(ctx context.Context, in *GetMyFeedRequest, opts ...grpc.CallOption) (*GetMyFeedResponse, error)
 	CheckMySubs(ctx context.Context, in *CheckMySubsRequest, opts ...grpc.CallOption) (*CheckMySubsResponse, error)
 	GetMySubscriptions(ctx context.Context, in *GetMySubscriptionsRequest, opts ...grpc.CallOption) (*GetMySubscriptionsResponse, error)
+	GetAllReviews(ctx context.Context, in *GetAllReviewsRequest, opts ...grpc.CallOption) (*GetAllReviewsResponse, error)
 	GetNewUsers(ctx context.Context, in *GetNewUsersRequest, opts ...grpc.CallOption) (*GetNewUsersResponse, error)
 	AddNewSubscription(ctx context.Context, in *AddNewSubscriptionRequest, opts ...grpc.CallOption) (*AddNewSubscriptionResponse, error)
 	DeleteSubscription(ctx context.Context, in *DeleteSubscriptionRequest, opts ...grpc.CallOption) (*DeleteSubscriptionResponse, error)
 	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*GetPostResponse, error)
-	GetLastPosts(ctx context.Context, in *GetLastPostsRequest, opts ...grpc.CallOption) (*GetLastPostsResponse, error)
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*CreatePostResponse, error)
 	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error)
 	SearchUser(ctx context.Context, in *SearchUserRequest, opts ...grpc.CallOption) (*SearchUserResponse, error)
@@ -83,6 +84,15 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserReques
 	return out, nil
 }
 
+func (c *userServiceClient) GetPostsForBook(ctx context.Context, in *GetPostsForBookRequest, opts ...grpc.CallOption) (*GetPostsForBookResponse, error) {
+	out := new(GetPostsForBookResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetPostsForBook", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) GetMyFeed(ctx context.Context, in *GetMyFeedRequest, opts ...grpc.CallOption) (*GetMyFeedResponse, error) {
 	out := new(GetMyFeedResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/GetMyFeed", in, out, opts...)
@@ -104,6 +114,15 @@ func (c *userServiceClient) CheckMySubs(ctx context.Context, in *CheckMySubsRequ
 func (c *userServiceClient) GetMySubscriptions(ctx context.Context, in *GetMySubscriptionsRequest, opts ...grpc.CallOption) (*GetMySubscriptionsResponse, error) {
 	out := new(GetMySubscriptionsResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/GetMySubscriptions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetAllReviews(ctx context.Context, in *GetAllReviewsRequest, opts ...grpc.CallOption) (*GetAllReviewsResponse, error) {
+	out := new(GetAllReviewsResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetAllReviews", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,15 +165,6 @@ func (c *userServiceClient) GetPost(ctx context.Context, in *GetPostRequest, opt
 	return out, nil
 }
 
-func (c *userServiceClient) GetLastPosts(ctx context.Context, in *GetLastPostsRequest, opts ...grpc.CallOption) (*GetLastPostsResponse, error) {
-	out := new(GetLastPostsResponse)
-	err := c.cc.Invoke(ctx, "/user.UserService/GetLastPosts", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userServiceClient) CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*CreatePostResponse, error) {
 	out := new(CreatePostResponse)
 	err := c.cc.Invoke(ctx, "/user.UserService/CreatePost", in, out, opts...)
@@ -190,14 +200,15 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	GetPostsForBook(context.Context, *GetPostsForBookRequest) (*GetPostsForBookResponse, error)
 	GetMyFeed(context.Context, *GetMyFeedRequest) (*GetMyFeedResponse, error)
 	CheckMySubs(context.Context, *CheckMySubsRequest) (*CheckMySubsResponse, error)
 	GetMySubscriptions(context.Context, *GetMySubscriptionsRequest) (*GetMySubscriptionsResponse, error)
+	GetAllReviews(context.Context, *GetAllReviewsRequest) (*GetAllReviewsResponse, error)
 	GetNewUsers(context.Context, *GetNewUsersRequest) (*GetNewUsersResponse, error)
 	AddNewSubscription(context.Context, *AddNewSubscriptionRequest) (*AddNewSubscriptionResponse, error)
 	DeleteSubscription(context.Context, *DeleteSubscriptionRequest) (*DeleteSubscriptionResponse, error)
 	GetPost(context.Context, *GetPostRequest) (*GetPostResponse, error)
-	GetLastPosts(context.Context, *GetLastPostsRequest) (*GetLastPostsResponse, error)
 	CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error)
 	DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error)
 	SearchUser(context.Context, *SearchUserRequest) (*SearchUserResponse, error)
@@ -220,6 +231,9 @@ func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserReq
 func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
+func (UnimplementedUserServiceServer) GetPostsForBook(context.Context, *GetPostsForBookRequest) (*GetPostsForBookResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPostsForBook not implemented")
+}
 func (UnimplementedUserServiceServer) GetMyFeed(context.Context, *GetMyFeedRequest) (*GetMyFeedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMyFeed not implemented")
 }
@@ -228,6 +242,9 @@ func (UnimplementedUserServiceServer) CheckMySubs(context.Context, *CheckMySubsR
 }
 func (UnimplementedUserServiceServer) GetMySubscriptions(context.Context, *GetMySubscriptionsRequest) (*GetMySubscriptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMySubscriptions not implemented")
+}
+func (UnimplementedUserServiceServer) GetAllReviews(context.Context, *GetAllReviewsRequest) (*GetAllReviewsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllReviews not implemented")
 }
 func (UnimplementedUserServiceServer) GetNewUsers(context.Context, *GetNewUsersRequest) (*GetNewUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNewUsers not implemented")
@@ -240,9 +257,6 @@ func (UnimplementedUserServiceServer) DeleteSubscription(context.Context, *Delet
 }
 func (UnimplementedUserServiceServer) GetPost(context.Context, *GetPostRequest) (*GetPostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPost not implemented")
-}
-func (UnimplementedUserServiceServer) GetLastPosts(context.Context, *GetLastPostsRequest) (*GetLastPostsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLastPosts not implemented")
 }
 func (UnimplementedUserServiceServer) CreatePost(context.Context, *CreatePostRequest) (*CreatePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePost not implemented")
@@ -338,6 +352,24 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetPostsForBook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPostsForBookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetPostsForBook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetPostsForBook",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetPostsForBook(ctx, req.(*GetPostsForBookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_GetMyFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetMyFeedRequest)
 	if err := dec(in); err != nil {
@@ -388,6 +420,24 @@ func _UserService_GetMySubscriptions_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetMySubscriptions(ctx, req.(*GetMySubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetAllReviews_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllReviewsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetAllReviews(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetAllReviews",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetAllReviews(ctx, req.(*GetAllReviewsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -460,24 +510,6 @@ func _UserService_GetPost_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetPost(ctx, req.(*GetPostRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_GetLastPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLastPostsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GetLastPosts(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/user.UserService/GetLastPosts",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetLastPosts(ctx, req.(*GetLastPostsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -560,6 +592,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_DeleteUser_Handler,
 		},
 		{
+			MethodName: "GetPostsForBook",
+			Handler:    _UserService_GetPostsForBook_Handler,
+		},
+		{
 			MethodName: "GetMyFeed",
 			Handler:    _UserService_GetMyFeed_Handler,
 		},
@@ -570,6 +606,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMySubscriptions",
 			Handler:    _UserService_GetMySubscriptions_Handler,
+		},
+		{
+			MethodName: "GetAllReviews",
+			Handler:    _UserService_GetAllReviews_Handler,
 		},
 		{
 			MethodName: "GetNewUsers",
@@ -586,10 +626,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPost",
 			Handler:    _UserService_GetPost_Handler,
-		},
-		{
-			MethodName: "GetLastPosts",
-			Handler:    _UserService_GetLastPosts_Handler,
 		},
 		{
 			MethodName: "CreatePost",
